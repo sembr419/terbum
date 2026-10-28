@@ -190,8 +190,8 @@ input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid
   <h1>Тэрбумын зам</h1>
   <div id="g-login" class="box" style="gap:12px" hidden>
     <p>Өгөгдөл чинь үүлэнд хадгалагдана. Утсаа солиход ижил бүртгэлээр нэвтрээд үргэлжлүүлнэ.</p>
-    <label class="f">Имэйл<input id="gEmail" type="email" autocomplete="username" inputmode="email"></label>
-    <label class="f">Нууц үг<input id="gPw" type="password" autocomplete="current-password"></label>
+    <label class="f">Имэйл<input id="gEmail" type="email" autocomplete="username" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+    <label class="f">Нууц үг<input id="gPw" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
     <p class="err" id="gErr" role="alert"></p>
     <button class="btn green" id="gIn" type="button">Нэвтрэх</button>
     <button class="btn ghost" id="gUp" type="button">Шинэ бүртгэл үүсгэх</button>
@@ -567,15 +567,19 @@ function hideGate(){$("gate").hidden=true}
 function authMsg(e){const c=e&&e.code||"";return({
   "auth/invalid-credential":"Имэйл эсвэл нууц үг буруу байна.","auth/wrong-password":"Имэйл эсвэл нууц үг буруу байна.","auth/user-not-found":"Имэйл эсвэл нууц үг буруу байна.",
   "auth/email-already-in-use":"Энэ имэйлээр бүртгэл аль хэдийн байна. Нэвтэрнэ үү.","auth/weak-password":"Нууц үг хамгийн багадаа 6 тэмдэгт байх ёстой.",
-  "auth/invalid-email":"Имэйл хаяг буруу байна.","auth/missing-password":"Нууц үгээ оруулна уу.","auth/network-request-failed":"Интернэт холболтоо шалгана уу.",
+  "auth/invalid-email":"Имэйл хаяг буруу байна. Гарын хэл англи эсэхийг шалгана уу.","auth/missing-password":"Нууц үгээ оруулна уу.","auth/network-request-failed":"Интернэт холболтоо шалгана уу.",
   "auth/too-many-requests":"Хэт олон оролдлого хийлээ. Түр хүлээгээд дахин оролдоно уу.","auth/admin-restricted-operation":"Шинэ бүртгэл үүсгэхийг хаасан байна.",
   "auth/operation-not-allowed":"Firebase дээр Email/Password нэвтрэлтийг идэвхжүүлээгүй байна (ЗААВАР, 4-р алхам)."}[c]||"Алдаа гарлаа: "+c)}
+function readEmail(){const raw=$("gEmail").value;const em=raw.replace(/\s+/g,"").toLowerCase();$("gEmail").value=em;
+  if(/[^\x21-\x7e]/.test(em)){$("gErr").textContent="Имэйлд кирилл эсвэл тусгай үсэг орсон байна. Гараа англи (English) болгоод дахин бичнэ үү.";return null}
+  if(!/^[^@]+@[^@]+\.[a-z]{2,}$/.test(em)){$("gErr").textContent="Имэйл хаяг буруу байна. Жишээ: name@gmail.com";return null}
+  return em}
 function gateBusy(on){["gIn","gUp","gReset"].forEach(i=>$(i).disabled=on)}
-$("gIn").onclick=()=>{const em=$("gEmail").value.trim(),pw=$("gPw").value;$("gErr").textContent="";if(!F)return;gateBusy(true);
+$("gIn").onclick=()=>{$("gErr").textContent="";const em=readEmail(),pw=$("gPw").value;if(!em||!F)return;gateBusy(true);
   F.A.signInWithEmailAndPassword(F.auth,em,pw).catch(e=>$("gErr").textContent=authMsg(e)).finally(()=>gateBusy(false))};
-$("gUp").onclick=()=>{const em=$("gEmail").value.trim(),pw=$("gPw").value;$("gErr").textContent="";if(!F)return;gateBusy(true);
+$("gUp").onclick=()=>{$("gErr").textContent="";const em=readEmail(),pw=$("gPw").value;if(!em||!F)return;gateBusy(true);
   F.A.createUserWithEmailAndPassword(F.auth,em,pw).catch(e=>$("gErr").textContent=authMsg(e)).finally(()=>gateBusy(false))};
-$("gReset").onclick=()=>{const em=$("gEmail").value.trim();if(!em){$("gErr").textContent="Эхлээд имэйлээ бичнэ үү.";return}if(!F)return;
+$("gReset").onclick=()=>{$("gErr").textContent="";const em=readEmail();if(!em||!F)return;
   F.A.sendPasswordResetEmail(F.auth,em).then(()=>$("gErr").textContent="Нууц үг сэргээх холбоосыг "+em+" руу илгээлээ.").catch(e=>$("gErr").textContent=authMsg(e))};
 $("gPw").addEventListener("keydown",e=>{if(e.key==="Enter")$("gIn").click()});
 
