@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f6b4f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Тэрбум">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>Тэрбумын зам</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<style>
+/* Layout: phone app — 4 screens switched by a fixed bottom tab bar; bottom sheets for forms; counter screen is always dark */
+:root{
+  --bg:#eef2ef; --surface:#ffffff; --ink:#13241d; --muted:#52645c; --line:#dfe6e2; --track:#e3e9e6;
+  --accent:#0f6b4f; --accent-ink:#ffffff; --accent-soft:#dcefe6; --hero-sub:#cfe8dd; --hero-track:#2f8466;
+  --gold:#b07a12; --gold-ink:#8a5e08; --gold-soft:#fbf1da; --gold-track:#f1e6cc; --hl:#f3d48a;
+  --good:#1d7a45; --warn:#b5651d; --warn-soft:#fdf3e8; --warn-line:#f0d7bb; --bad:#b3372e; --btn:#13241d; --btn-ink:#ffffff;
+  --c-bg:#0b1411; --c-card:#16231e; --c-line:#22332c; --c-ink:#e6efe9; --c-muted:#9fb2a9; --c-gold:#e8b955; --c-leaf:#5fb88f; --c-leaf2:#3f9a72; --c-stem:#7fbf9f;
+  --display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1714; --surface:#17221d; --ink:#e4eee9; --muted:#9db0a7; --line:#28362f; --track:#25332d;
+  --accent:#3fb98c; --accent-ink:#06140e; --accent-soft:#1b3a2e; --hero-sub:#0f3d2c; --hero-track:#2c8e69;
+  --gold:#e0b14f; --gold-ink:#e8c071; --gold-soft:#2c2414; --gold-track:#3a3020; --hl:#fff1c9;
+  --good:#5fcf8c; --warn:#e39a55; --warn-soft:#2a2016; --warn-line:#4a3622; --bad:#ec7a70; --btn:#e4eee9; --btn-ink:#0f1714; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1714; --surface:#17221d; --ink:#e4eee9; --muted:#9db0a7; --line:#28362f; --track:#25332d;
+  --accent:#3fb98c; --accent-ink:#06140e; --accent-soft:#1b3a2e; --hero-sub:#0f3d2c; --hero-track:#2c8e69;
+  --gold:#e0b14f; --gold-ink:#e8c071; --gold-soft:#2c2414; --gold-track:#3a3020; --hl:#fff1c9;
+  --good:#5fcf8c; --warn:#e39a55; --warn-soft:#2a2016; --warn-line:#4a3622; --bad:#ec7a70; --btn:#e4eee9; --btn-ink:#0f1714; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+html,body{min-height:100%}
+body{margin:0;-webkit-text-size-adjust:100%;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+body.dark-screen{background:var(--c-bg)}
+.num{font-variant-numeric:tabular-nums}
+.screen{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:calc(18px + env(safe-area-inset-top,0px)) calc(104px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+.head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.head .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.head .t small{font-size:13px;color:var(--muted)}
+h1{font-family:var(--display);font-weight:700;font-size:19px;margin:0;letter-spacing:.01em}
+.sq{width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--ink);flex-shrink:0}
+.card{background:var(--surface);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h2{margin:0;font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.card h2 small{font-weight:400;font-size:12px;color:var(--muted)}
+.hero{background:var(--accent);color:var(--accent-ink);border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:14px;border:0;text-align:left;font:inherit;cursor:pointer;width:100%}
+.hero .lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.hero .live{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--hl)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+@media (prefers-reduced-motion:no-preference){.dot{animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{opacity:.3}}}
+.hero .big{font-family:var(--display);font-weight:700;font-size:clamp(26px,8.4vw,34px);line-height:1.1}
+.hero .sub{font-size:13px;opacity:.85}
+.hbar{height:10px;border-radius:6px;background:var(--hero-track);position:relative}
+.hbar i{display:block;height:10px;border-radius:6px;background:var(--accent-ink);min-width:8px}
+.hbar b{position:absolute;top:-3px;width:2px;height:16px;background:var(--hl)}
+.hrow{display:flex;justify-content:space-between;font-size:13px;gap:8px;flex-wrap:wrap}
+.pill{align-self:flex-start;background:var(--accent-ink);color:var(--accent);font-weight:600;font-size:13px;padding:6px 12px;border-radius:999px}
+.pill.behind{color:var(--warn)}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{background:var(--surface);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tile .k{font-size:12px;color:var(--muted)}
+.tile .v{font-weight:700;font-size:18px;display:flex;align-items:center;gap:6px}
+.tile .s{font-size:12px;color:var(--muted)}
+.tile .s.ok{color:var(--good);font-weight:600}
+.meter{height:6px;border-radius:4px;background:var(--accent-soft);margin-top:4px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.streak{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;margin-top:4px}
+.streak span{height:6px;border-radius:2px;background:var(--track)}
+.streak span.on{background:var(--warn)}
+.row-link{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:16px;padding:14px;border:0;font:inherit;color:inherit;text-align:left;cursor:pointer;width:100%}
+.row-link.alert{background:var(--warn-soft);border:1px solid var(--warn-line);padding:12px 14px}
+.circle{width:44px;height:44px;border-radius:50%;background:var(--gold-soft);display:grid;place-items:center;flex-shrink:0;color:var(--gold-ink)}
+.stack{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.stack .a{font-weight:600}
+.stack .b{font-size:12px;color:var(--muted)}
+.gbar{height:5px;border-radius:3px;background:var(--gold-track);margin-top:4px;overflow:hidden}
+.gbar i{display:block;height:100%;background:var(--gold)}
+.btn{height:52px;border:0;border-radius:16px;background:var(--btn);color:var(--btn-ink);font:inherit;font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;width:100%;padding:0 16px}
+.btn.green{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--bad);border:1px solid var(--line)}
+.btn.sm{height:44px;width:auto;font-size:14px;border-radius:14px}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);z-index:10;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));height:64px}
+nav.tabs a{text-decoration:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px}
+nav.tabs a[aria-current="page"]{color:var(--accent);font-weight:600}
+body.dark-screen nav.tabs{background:var(--c-card);border-top-color:var(--c-line)}
+body.dark-screen nav.tabs a{color:var(--c-muted)}
+body.dark-screen nav.tabs a[aria-current="page"]{color:var(--c-gold)}
+/* counter */
+#counter{color:var(--c-ink);gap:16px}
+#counter .sq{background:var(--c-card);border-color:var(--c-card);color:var(--c-ink)}
+.c-live{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--c-muted)}
+.c-live .dot{color:var(--c-gold)}
+.c-tree{display:flex;flex-direction:column;align-items:center;gap:6px}
+.c-cap{font-size:12px;color:var(--c-muted);letter-spacing:.08em;text-transform:uppercase}
+.c-num{display:flex;align-items:baseline;justify-content:center;gap:2px;flex-wrap:wrap}
+.c-num .i{font-family:var(--display);font-weight:700;font-size:clamp(26px,8.6vw,36px);color:#ffffff}
+.c-num .d{font-family:var(--display);font-weight:500;font-size:clamp(16px,5vw,21px);color:var(--c-gold)}
+.c-grow{font-size:13px;color:var(--c-stem);text-align:center}
+.c-card{background:var(--c-card);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.c-card .k{font-size:12px;color:var(--c-muted)}
+.c-card .v{font-weight:700;font-size:19px;color:var(--c-gold)}
+.c-rates{background:var(--c-card);border-radius:16px;padding:4px 14px}
+.c-rates div{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--c-line);font-size:14px}
+.c-rates div:last-child{border-bottom:0}
+.c-rates span:first-child{color:var(--c-muted)}
+.c-future{border:1px solid #3a3220;background:#1a1710;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.c-future .k{font-size:12px;color:#c9b27a}
+.c-future .v{font-weight:700;font-size:17px;color:#f3d48a}
+.c-future .s{font-size:12px;color:var(--c-muted)}
+.c-note{font-size:11px;color:#8ea39a;text-align:center}
+.flash{position:fixed;left:50%;top:calc(24px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--c-gold);color:#1a1405;font-weight:700;padding:10px 16px;border-radius:999px;font-size:14px;z-index:40;white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
+/* plan */
+svg text{font-family:var(--body)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px}
+.opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.opt{height:44px;border-radius:12px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.reach{display:flex;justify-content:space-between;align-items:center;background:var(--accent-soft);border-radius:12px;padding:10px 12px;gap:8px}
+.reach span:first-child{font-size:13px;color:var(--muted)}
+.reach b{font-family:var(--display);font-size:17px;color:var(--accent)}
+.steps{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;align-items:end}
+.steps div{display:flex;flex-direction:column;align-items:center;gap:4px}
+.steps i{display:block;width:100%;border-radius:4px;background:var(--track);position:relative;overflow:hidden}
+.steps i b{position:absolute;left:0;right:0;bottom:0;background:var(--gold)}
+.steps span{font-size:9px;color:var(--muted)}
+/* assets */
+.alloc{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;background:var(--track)}
+.item{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 0;border:0;border-top:1px solid var(--track);background:none;text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%}
+.item:first-child{border-top:0}
+.badge{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-size:11px;font-weight:700;background:var(--accent-soft);color:var(--accent)}
+.nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.amt{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.amt b{font-size:15px}
+.amt small{font-size:12px;font-weight:600;color:var(--good)}
+.amt small.neg{color:var(--bad)}
+.tx{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--track)}
+.tx:last-child{border-bottom:0}
+.tx span:first-child{color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.medals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.medal{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:11px;line-height:1.25}
+.medal i{width:48px;height:48px;border-radius:50%;display:grid;place-items:center}
+.medal.on i{background:var(--gold);color:#fff}
+.medal.off i{border:2px dashed var(--line);color:var(--muted)}
+.medal.off span{color:var(--muted)}
+.empty{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.empty p{margin:0;color:var(--muted)}
+.note{font-size:12px;color:var(--muted);margin:0}
+/* sheets */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:30;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);color:var(--ink);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:18px max(18px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px}
+.sheet h3{margin:0;font-family:var(--display);font-weight:500;font-size:16px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:0}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px;width:100%;min-width:0;min-height:44px}
+.r2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.acts{display:flex;gap:10px}
+.acts .btn{flex:1}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(80px + env(safe-area-inset-bottom,0px));background:var(--btn);color:var(--btn-ink);padding:10px 16px;border-radius:999px;font-size:13px;z-index:50;max-width:calc(100% - 32px);text-align:center}
+.celebrate{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:rgba(11,20,17,.7);padding:24px}
+.celebrate .box{background:var(--c-card);color:var(--c-ink);border-radius:24px;padding:28px 24px;max-width:320px;width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.celebrate .box i{width:72px;height:72px;border-radius:50%;background:var(--c-gold);display:grid;place-items:center;color:#1a1405}
+.celebrate .box b{font-family:var(--display);font-size:18px}
+.celebrate .box p{margin:0;color:var(--c-muted);font-size:14px}
+@media (prefers-reduced-motion:no-preference){.celebrate .box{animation:pop .4s cubic-bezier(.2,1.4,.4,1)}@keyframes pop{from{transform:scale(.7);opacity:0}}.hbar i,.meter i,.gbar i{transition:width .5s ease}}
+.gate{position:fixed;inset:0;z-index:70;background:var(--bg);overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(24px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px))}
+.gate .box{width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px}
+.gate img{width:72px;height:72px;border-radius:18px}
+.gate h1{font-size:22px}
+.gate p{margin:0;color:var(--muted)}
+.gate .err{color:var(--bad);min-height:1.4em;font-size:14px}
+.gate .link{background:none;border:0;color:var(--accent);font:inherit;font-size:14px;cursor:pointer;padding:8px 0;align-self:flex-start;min-height:44px}
+.btn:disabled{opacity:.6}
+</style>
+</head>
+<body>
+<div class="gate" id="gate" hidden><div class="box">
+  <img src="apple-touch-icon.png" alt="">
+  <h1>Тэрбумын зам</h1>
+  <div id="g-login" class="box" style="gap:12px" hidden>
+    <p>Өгөгдөл чинь үүлэнд хадгалагдана. Утсаа солиход ижил бүртгэлээр нэвтрээд үргэлжлүүлнэ.</p>
+    <label class="f">Имэйл<input id="gEmail" type="email" autocomplete="username" inputmode="email"></label>
+    <label class="f">Нууц үг<input id="gPw" type="password" autocomplete="current-password"></label>
+    <p class="err" id="gErr" role="alert"></p>
+    <button class="btn green" id="gIn" type="button">Нэвтрэх</button>
+    <button class="btn ghost" id="gUp" type="button">Шинэ бүртгэл үүсгэх</button>
+    <button class="link" id="gReset" type="button">Нууц үгээ мартсан</button>
+  </div>
+  <div id="g-config" hidden><p>Firebase тохиргоо хийгдээгүй байна. ЗААВАР файлын 3-р алхмын дагуу <b>config.js</b> файлд Firebase-ийн тохиргоогоо бичнэ үү.</p></div>
+  <div id="g-offline" hidden><p>Апп-ыг анх удаа нээхэд интернэт холболт хэрэгтэй. Холбогдоод дахин нээнэ үү.</p></div>
+</div></div>
+<main>
+<!-- HOME -->
+<section class="screen" id="home" aria-label="Нүүр">
+  <div class="head">
+    <div class="t"><small id="hDate"></small><h1>Тэрбумын зам</h1></div>
+    <button class="sq" id="btnSettings" type="button" aria-label="Тохиргоо"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+  </div>
+  <button class="hero" id="heroBtn" type="button" aria-label="Амьд тоолуур нээх">
+    <span style="display:flex;justify-content:space-between;align-items:center;width:100%"><span class="lbl">Нийт хөрөнгө</span><span class="live"><span class="dot"></span>Амьд</span></span>
+    <span style="display:flex;flex-direction:column;gap:4px"><span class="big num" id="hTotal">—</span><span class="sub num" id="hSub"></span></span>
+    <span style="display:flex;flex-direction:column;gap:8px;width:100%">
+      <span class="hbar"><i id="hBar" style="width:0"></i><b id="hMark" style="left:0"></b></span>
+      <span class="hrow num"><span id="hPct">Зорилгын 0%</span><span id="hGoal" style="opacity:.85"></span></span>
+    </span>
+    <span class="pill" id="hStatus">Ачаалж байна…</span>
+  </button>
+  <div id="homeEmpty" class="card" hidden>
+    <div class="empty"><p>Эхлээд хуримтлалын сангаа нэмье. 2026.10-ын байдлаар үлдэгдэл нь 11,654,002₮ (хийсэн мөнгө 9,327,000₮).</p>
+    <button class="btn green sm" id="seedFund" type="button">Хуримтлалын сангаа нэмэх</button></div>
+  </div>
+  <div class="g2">
+    <div class="tile"><span class="k">Энэ сарын зорилт</span><span class="v num" id="mTarget">—</span><span class="s" id="mDone"></span><div class="meter"><i id="mBar" style="width:0"></i></div></div>
+    <div class="tile"><span class="k">Цуврал</span><span class="v"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5.3 1.8 1.2 2.8 2.2 3C10.5 9 11 6 12 3z"/></svg><span id="stN">0 сар</span></span><span class="s">Зорилтоо дараалан биелүүлсэн</span><div class="streak" id="stDots"></div></div>
+  </div>
+  <button class="row-link" id="nextBadge" type="button">
+    <span class="circle"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M8.5 14 7 22l5-3 5 3-1.5-8"/></svg></span>
+    <span class="stack"><span class="a" id="nbA">Дараагийн тэмдэг</span><span class="b" id="nbB"></span><span class="gbar"><i id="nbBar" style="width:0"></i></span></span>
+  </button>
+  <button class="row-link alert" id="bondAlert" type="button" hidden>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>
+    <span class="stack"><span class="a" id="baA" style="font-size:14px"></span><span class="b" id="baB"></span></span>
+  </button>
+  <button class="btn" id="btnDeposit" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Мөнгө хийх</button>
+  <p class="note" id="storeNote"></p>
+</section>
+
+<!-- COUNTER -->
+<section class="screen" id="counter" aria-label="Амьд тоолуур" hidden>
+  <div class="head">
+    <a class="sq" href="#home" aria-label="Хаах"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+    <span class="c-live"><span class="dot"></span>Амьд тооцоолж байна</span>
+  </div>
+  <div class="c-tree">
+    <svg width="190" height="190" viewBox="0 0 190 190" role="img" id="treeSvg" aria-label="Мод"></svg>
+    <span class="c-cap" id="treeCap">Мод · 1-р шат / 10</span>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+    <span class="c-cap">Таны мөнгө яг одоо</span>
+    <div class="c-num num"><span class="i" id="cInt">0</span><span class="d" id="cDec">.0000₮</span></div>
+    <span class="c-grow">Секунд бүр өсөж байна</span>
+  </div>
+  <div class="g2">
+    <div class="c-card"><span class="k">Өнөөдөр</span><span class="v num" id="cToday">+0₮</span></div>
+    <div class="c-card"><span class="k">Энэ сар</span><span class="v num" id="cMonth">+0₮</span></div>
+  </div>
+  <div class="c-rates num">
+    <div><span>Секундэд</span><span id="rS">—</span></div>
+    <div><span>Цагт</span><span id="rH">—</span></div>
+    <div><span>Өдөрт</span><span id="rD">—</span></div>
+    <div><span>Сард</span><span id="rM">—</span></div>
+  </div>
+  <div class="c-future"><span class="k" id="futK">2041 онд таны мөнгө</span><span class="v num" id="futV">—</span><span class="s" id="futS"></span></div>
+  <p class="c-note" id="cNote"></p>
+</section>
+
+<!-- PLAN -->
+<section class="screen" id="plan" aria-label="Төлөвлөгөө" hidden>
+  <div class="head"><div class="t"><h1>Төлөвлөгөө</h1><small id="pSub"></small></div></div>
+  <div class="card">
+    <h2>Ирээдүйн таамаг <small>сая ₮</small></h2>
+    <div id="chart" style="touch-action:pan-y"></div>
+    <div class="legend"><span><i style="background:var(--accent)"></i><span id="lgMid">15% (суурь)</span></span><span><i style="background:var(--accent);opacity:.25;height:10px"></i><span id="lgBand">10–20% муж</span></span><span><i style="background:var(--gold)"></i>Бодит</span></div>
+    <p class="note">Графикийг хуруугаараа гүйлгэж он бүрийн дүнг харна.</p>
+  </div>
+  <div class="card">
+    <h2>Хэрвээ сард … хийвэл?</h2>
+    <div class="opts" id="opts"></div>
+    <div class="reach"><span>1 тэрбум₮-д хүрэх</span><b class="num" id="reach">—</b></div>
+    <p class="note" id="reachDelta"></p>
+  </div>
+  <div class="card">
+    <h2>10 шат <small id="stepCap"></small></h2>
+    <div class="steps" id="steps"></div>
+  </div>
+</section>
+
+<!-- ASSETS -->
+<section class="screen" id="assets" aria-label="Хөрөнгө" hidden>
+  <div class="head">
+    <div class="t"><h1>Хөрөнгө</h1><small class="num" id="aSub"></small></div>
+    <button class="btn green sm" id="btnAdd" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Шинэ</button>
+  </div>
+  <div class="card" id="allocCard"><h2>Хуваарилалт</h2><div class="alloc" id="alloc"></div><div class="legend num" id="allocLg"></div></div>
+  <div class="card" style="padding:4px 14px"><div id="list"></div></div>
+  <div class="card"><h2>Сүүлийн гүйлгээ</h2><div id="txs"></div></div>
+  <div class="card"><h2>Шагнал тэмдэг <small id="medalCount"></small></h2><div class="medals" id="medals"></div></div>
+</section>
+</main>
+
+<nav class="tabs" aria-label="Үндсэн цэс"><div class="in">
+  <a href="#home" data-tab="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Нүүр</a>
+  <a href="#counter" data-tab="counter"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>Тоолуур</a>
+  <a href="#plan" data-tab="plan"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18M5 16l4-5 4 3 6-8"/></svg>Төлөвлөгөө</a>
+  <a href="#assets" data-tab="assets"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18M16 15h2"/></svg>Хөрөнгө</a>
+</div></nav>
+<div id="sheetHost"></div>
+
+<script src="config.js"></script>
+<script type="module">
+(function(){
+"use strict";
+const TYPES={fund:"Хуримтлалын сан",bond:"Бонд",deposit:"Хадгаламж",p2p:"P2P зээл",stock:"Хувьцаа / ETF",other:"Бусад"};
+const SHORT={fund:"САН",bond:"БОНД",deposit:"ХАД",p2p:"P2P",stock:"ХУВ",other:"БУС"};
+const TCOL={fund:"var(--accent)",bond:"var(--gold)",deposit:"#4a7fb5",p2p:"#8a5cc2",stock:"var(--warn)",other:"var(--muted)"};
+const DEF={goal:1e9,goalYear:2041,ret:15,monthly:600000,growth:10,fundMonthly:300000,startTotal:11654002,startYM:"2026-10",history:{}};
+const YS=31557600, MILES=[1e7,2.5e7,5e7,1e8,2.5e8,5e8,1e9];
+let S={settings:{...DEF},holdings:[]}, store=null, loaded=false, tab="home", pick=1;
+const $=id=>document.getElementById(id);
+const fmt=n=>Math.round(n).toLocaleString("en-US")+"₮";
+const fmt0=n=>Math.round(n).toLocaleString("en-US");
+function short(n){const a=Math.abs(n),s=n<0?"−":"";if(a>=1e9)return s+parseFloat((a/1e9).toFixed(2))+" тэрбум₮";if(a>=1e8)return s+(a/1e6).toFixed(0)+" сая₮";if(a>=1e6)return s+(a/1e6).toFixed(2)+" сая₮";if(a>=1e4)return s+Math.round(a/1e3)+" мянга₮";return s+fmt(a)}
+function shortM(n){return n>=1e9?(n/1e9).toFixed(n%1e9?1:0)+" тэрбум":Math.round(n/1e6)+" сая"}
+const pad=n=>String(n).padStart(2,"0");
+function todayStr(){const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+const ym=d=>(d||todayStr()).slice(0,7);
+const ymDot=s=>s.replace("-",".");
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function mb(a,b){const[y1,m1]=a.split("-").map(Number),[y2,m2]=b.split("-").map(Number);return (y2-y1)*12+(m2-m1)}
+function addM(s,k){let[y,m]=s.split("-").map(Number);m+=k;y+=Math.floor((m-1)/12);m=((m-1)%12+12)%12+1;return y+"-"+pad(m)}
+const clone=o=>JSON.parse(JSON.stringify(o));
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// ---------- model ----------
+const auto=h=>h.type==="bond"||h.type==="deposit"||h.type==="p2p";
+const invested=h=>(h.deposits||[]).reduce((s,d)=>s+(+d.a||0),0);
+function valueOf(h){
+  if(auto(h)&&h.rate>0){const r=h.rate/100,now=Date.now();return (h.deposits||[]).reduce((s,d)=>s+d.a*Math.pow(1+r,Math.max(0,(now-new Date(d.d).getTime())/YS/1000)),0)}
+  return +h.value||invested(h);
+}
+function totals(){let v=0,i=0;S.holdings.forEach(h=>{v+=valueOf(h);i+=invested(h)});return{v,i}}
+const hasFund=()=>S.holdings.some(h=>h.type==="fund");
+function yearIdx(ymS){return Math.floor(Math.max(0,mb(S.settings.startYM,ymS)-1)/12)}
+function targetFor(ymS){const st=S.settings;return st.monthly*Math.pow(1+st.growth/100,yearIdx(ymS))}
+// simulate from (v0 at ym0) for n months; returns array of values
+function sim(v0,ym0,n,ret,monthly,fundOn){
+  const st=S.settings,m=Math.pow(1+ret/100,1/12)-1,g=st.growth/100;let b=v0;const out=[b];
+  for(let k=1;k<=n;k++){const y=addM(ym0,k),yi=yearIdx(y),mon=+y.slice(5);
+    b=b*(1+m)+monthly*Math.pow(1+g,yi)+(fundOn?st.fundMonthly*Math.pow(1+g,yi)*(mon===12?2:1):0);out.push(b)}
+  return out;
+}
+function reachYM(v0,ym0,ret,monthly,fundOn){const st=S.settings,m=Math.pow(1+ret/100,1/12)-1,g=st.growth/100;let b=v0;if(b>=st.goal)return ym0;
+  for(let k=1;k<=720;k++){const y=addM(ym0,k),yi=yearIdx(y),mon=+y.slice(5);b=b*(1+m)+monthly*Math.pow(1+g,yi)+(fundOn?st.fundMonthly*Math.pow(1+g,yi)*(mon===12?2:1):0);if(b>=st.goal)return y}return null}
+function basePlan(){const st=S.settings;return sim(st.startTotal,st.startYM,Math.max(1,mb(st.startYM,st.goalYear+"-12")),st.ret,st.monthly,true)}
+function monthDeposits(ymS){return S.holdings.filter(h=>h.type!=="fund").reduce((a,h)=>a+(h.deposits||[]).filter(d=>!d.open&&ym(d.d)===ymS).reduce((x,d)=>x+d.a,0),0)}
+function streak(){const st=S.settings,cur=ym();let n=0,y=cur;if(monthDeposits(cur)<targetFor(cur))y=addM(cur,-1);
+  while(mb(st.startYM,y)>=0&&monthDeposits(y)>=targetFor(y)&&n<600){n++;y=addM(y,-1)}return n}
+function badges(){const {v}=totals(),sk=streak(),anyDep=S.holdings.some(h=>(h.deposits||[]).some(d=>!d.open&&h.type!=="fund"));
+  return [
+    ...MILES.map(x=>({id:"m"+x,label:shortM(x)+"₮",on:v>=x,ic:"check"})),
+    {id:"firstdep",label:"Анхны хөрөнгө оруулалт",on:anyDep,ic:"plus"},
+    {id:"bond",label:"Анхны бонд",on:S.holdings.some(h=>h.type==="bond"),ic:"bond"},
+    {id:"s3",label:"3 сар цуврал",on:sk>=3,ic:"fire"},{id:"s6",label:"6 сар цуврал",on:sk>=6,ic:"fire"},{id:"s12",label:"12 сар цуврал",on:sk>=12,ic:"fire"}];
+}
+function perSec(v){return v*Math.log(1+S.settings.ret/100)/YS}
+
+// ---------- render ----------
+function render(){
+  const st=S.settings,{v,i}=totals(),cur=ym(),has=S.holdings.length>0;
+  const bp=basePlan(),idx=Math.min(bp.length-1,Math.max(0,mb(st.startYM,cur))),expect=bp[idx];
+  const d=new Date();$("hDate").textContent=d.getFullYear()+"."+pad(d.getMonth()+1)+"."+pad(d.getDate())+", "+["Ням","Даваа","Мягмар","Лхагва","Пүрэв","Баасан","Бямба"][d.getDay()];
+  $("hTotal").textContent=loaded?fmt(v):"—";
+  const ps=perSec(v);
+  $("hSub").textContent=has?"Өнөөдөр +"+fmt0(ps*secsToday())+"₮ · секундэд +"+ps.toFixed(3)+"₮":"Бүртгэл хоосон байна";
+  const pct=Math.min(100,v/st.goal*100);
+  $("hBar").style.width=pct.toFixed(2)+"%";$("hMark").style.left=Math.min(100,expect/st.goal*100).toFixed(2)+"%";
+  $("hPct").textContent="Зорилгын "+(pct<10?pct.toFixed(1):pct.toFixed(0))+"%";$("hGoal").textContent=short(st.goal)+" · "+st.goalYear;
+  const hs=$("hStatus");
+  if(!loaded){hs.textContent="Ачаалж байна…";hs.className="pill"}
+  else if(!has){hs.textContent="Эхний хөрөнгөө нэмээрэй";hs.className="pill"}
+  else{const df=v-expect;hs.textContent="Төлөвлөгөөнөөс "+short(Math.abs(df))+(df>=0?" түрүүлж байна":" хоцорч байна");hs.className="pill"+(df<0?" behind":"")}
+  $("homeEmpty").hidden=!(loaded&&!has);
+  const tg=targetFor(cur),dn=monthDeposits(cur);
+  $("mTarget").textContent=fmt(tg);const md=$("mDone");md.textContent=dn>=tg?"Биеллээ · "+Math.round(dn/tg*100)+"%":"Хийсэн: "+fmt(dn);md.className="s"+(dn>=tg?" ok":"");
+  $("mBar").style.width=Math.min(100,dn/tg*100)+"%";
+  const sk=streak();$("stN").textContent=sk+" сар";$("stDots").innerHTML=Array.from({length:12},(_,k)=>`<span class="${k<Math.min(sk,12)?"on":""}"></span>`).join("");
+  // next badge
+  const nx=MILES.find(x=>x>v);
+  if(nx){const prev=[0,...MILES][MILES.indexOf(nx)];const r=reachYM(v,cur,st.ret,st.monthly,hasFund());
+    $("nbA").textContent="Дараагийн тэмдэг: "+shortM(nx)+"₮";
+    const when=(()=>{const m=st.ret/100,g=Math.pow(1+m,1/12)-1;let b=v;for(let k=1;k<=720;k++){const y=addM(cur,k),yi=yearIdx(y),mon=+y.slice(5);b=b*(1+g)+st.monthly*Math.pow(1+st.growth/100,yi)+(hasFund()?st.fundMonthly*Math.pow(1+st.growth/100,yi)*(mon===12?2:1):0);if(b>=nx)return y}return null})();
+    const prog=Math.max(0,Math.min(100,(v-prev)/(nx-prev)*100));
+    $("nbB").textContent=(when?ymDot(when)+" орчим · ":"")+Math.round(prog)+"% явж байна";$("nbBar").style.width=prog+"%";
+  }else{$("nbA").textContent="Бүх тэмдэг цуглуулсан!";$("nbB").textContent="Зорилгодоо хүрлээ";$("nbBar").style.width="100%"}
+  // bond alert
+  const bonds=S.holdings.filter(h=>auto(h)&&h.maturity).map(h=>({h,dd:Math.ceil((new Date(h.maturity)-new Date())/864e5)})).filter(x=>x.dd>=-30).sort((a,b)=>a.dd-b.dd);
+  const ba=$("bondAlert");if(bonds.length){const b=bonds[0];ba.hidden=false;ba.dataset.id=b.h.id;
+    $("baA").textContent=b.h.name+" · "+(b.dd>0?b.dd+" хоног үлдсэн":"хугацаа дууссан");
+    $("baB").textContent=b.dd>0?"Дуусахад ~"+fmt(valueOf(b.h)*Math.pow(1+b.h.rate/100,b.dd/365.25))+" болно. Хүүгээ дахин хөрөнгө оруулаарай.":"Мөнгөө дахин хөрөнгө оруулах эсвэл бүртгэлээ шинэчлээрэй."}
+  else ba.hidden=true;
+  renderPlan();renderAssets();renderCounterStatic();updSync();
+}
+function secsToday(){const d=new Date();return (d-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/1000}
+function secsMonth(){const d=new Date();return (d-new Date(d.getFullYear(),d.getMonth(),1))/1000}
+
+// ---------- counter ----------
+let cBase=0,cT0=0,cRate=0,cTimer=null;
+function renderCounterStatic(){
+  const st=S.settings,{v}=totals();cBase=v;cT0=Date.now();cRate=perSec(v);
+  $("rS").textContent=cRate.toFixed(4)+"₮";$("rH").textContent=fmt(cRate*3600);$("rD").textContent=fmt(cRate*86400);$("rM").textContent="~"+fmt(cRate*86400*30.44);
+  const bp=basePlan(),end=bp[bp.length-1],endDay=end*Math.log(1+st.ret/100)/365.25;
+  $("futK").textContent=st.goalYear+" онд таны мөнгө";$("futV").textContent="өдөрт ~"+fmt(Math.round(endDay/1000)*1000)+" өснө";
+  $("futS").textContent=cRate>0?"Одоогийнхоос "+Math.round(endDay/(cRate*86400))+" дахин хурдан":"Мөнгө хийж эхлэхэд тоолуур ажиллана";
+  $("cNote").textContent=st.ret+"% жилийн өгөөжөөр тооцсон таамаг. Бодит үнэ цэнийг шинэчлэхэд тоолуур тэндээс дахин эхэлнэ.";
+  const p=Math.min(1,v/st.goal),stage=Math.min(10,Math.floor(p*10)+1);$("treeCap").textContent="Мод · "+stage+"-р шат / 10";
+  drawTree(stage,p);tickCounter();
+}
+function drawTree(stage,p){
+  const C=2*Math.PI*84,dash=Math.max(6,C*p).toFixed(1);
+  const top=128-stage*6, leaves=[];
+  for(let k=0;k<Math.min(stage+1,8);k++){const yy=140-(k+1)*(140-top)/(Math.min(stage+1,8)+0.5),side=k%2?1:-1,sz=10+stage*1.6;
+    leaves.push(`<path d="M95 ${yy.toFixed(1)} C ${95+side*sz*.6} ${(yy-2).toFixed(1)}, ${95+side*sz*1.4} ${(yy-sz*.7).toFixed(1)}, ${95+side*sz*1.6} ${(yy-sz*1.3).toFixed(1)} C ${95+side*sz*.7} ${(yy-sz*1.3).toFixed(1)}, ${95+side*.5} ${(yy-sz*.6).toFixed(1)}, 95 ${yy.toFixed(1)} Z" fill="${k%2?"var(--c-leaf)":"var(--c-leaf2)"}"/>`)}
+  $("treeSvg").innerHTML=`<circle cx="95" cy="95" r="84" fill="none" stroke="#1c2b25" stroke-width="8"/><circle cx="95" cy="95" r="84" fill="none" stroke="var(--c-gold)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${dash} ${C.toFixed(1)}" transform="rotate(-90 95 95)"/><path d="M95 150 V${top}" stroke="var(--c-stem)" stroke-width="${3+stage*.4}" stroke-linecap="round" fill="none"/>${leaves.join("")}<path d="M68 150 H122" stroke="#2c3d36" stroke-width="4" stroke-linecap="round"/>`;
+  $("treeSvg").setAttribute("aria-label","Мод "+stage+"-р шатанд, зорилгын "+(p*100).toFixed(1)+"%");
+}
+function tickCounter(){
+  const v=cBase+cRate*(Date.now()-cT0)/1000;
+  $("cInt").textContent=fmt0(Math.floor(v));$("cDec").textContent="."+(v%1).toFixed(4).slice(2)+"₮";
+  $("cToday").textContent="+"+fmt0(cRate*secsToday())+"₮";$("cMonth").textContent="+"+fmt0(cRate*secsMonth())+"₮";
+}
+function setCounterRunning(on){clearInterval(cTimer);cTimer=null;if(on)cTimer=setInterval(()=>{if(!document.hidden)tickCounter()},100)}
+
+// ---------- plan ----------
+let chartData=null;
+function renderPlan(){
+  const st=S.settings,{v}=totals(),cur=ym(),fundOn=hasFund();
+  $("pSub").textContent=short(st.goal)+" хүрэх зам, "+cur.slice(0,4)+"–"+st.goalYear;
+  const start=v>0?v:st.startTotal, n=Math.max(12,mb(cur,st.goalYear+"-12"));
+  const lo=sim(start,cur,n,Math.max(0,st.ret-5),st.monthly,fundOn),md=sim(start,cur,n,st.ret,st.monthly,fundOn),hi=sim(start,cur,n,st.ret+5,st.monthly,fundOn);
+  $("lgMid").textContent=st.ret+"% (суурь)";$("lgBand").textContent=Math.max(0,st.ret-5)+"–"+(st.ret+5)+"% муж";
+  chartData={lo,md,hi,cur,n};drawChart();
+  // what-if
+  const base=st.monthly,step=base>=500000?200000:100000,list=[Math.max(0,base-step),base,base+step,base+2*step];
+  const lbl=x=>x>=1e6?(x/1e6).toFixed(x%1e6?1:0)+" сая":Math.round(x/1e3)+"k";
+  $("opts").innerHTML=list.map((x,k)=>`<button class="opt" type="button" data-k="${k}" aria-pressed="${k===pick}">${lbl(x)}</button>`).join("");
+  $("opts").querySelectorAll(".opt").forEach(b=>b.onclick=()=>{pick=+b.dataset.k;renderPlan()});
+  const rb=reachYM(start,cur,st.ret,list[1],fundOn),rp=reachYM(start,cur,st.ret,list[pick],fundOn);
+  $("reach").textContent=rp?ymDot(rp):"70+ жил";
+  let dl="Одоогийн төлөвлөгөө";if(pick!==1&&rb&&rp){const dm=mb(rp,rb);dl="Суурь төлөвлөгөөнөөс "+dur(Math.abs(dm))+(dm>0?" эрт":" хойно")}
+  $("reachDelta").textContent=dl;
+  // steps
+  const p=v/st.goal;let curStep=Math.min(9,Math.floor(p*10));
+  $("stepCap").textContent=(curStep+1)+"-р шат: "+Math.round(Math.min(1,(p*10-curStep))*100)+"%";
+  $("steps").innerHTML=Array.from({length:10},(_,k)=>{const f=Math.max(0,Math.min(1,p*10-k));const val=st.goal/10*(k+1);
+    return `<div><i style="height:${14+k*4}px"><b style="height:${(f*100).toFixed(0)}%"></b></i><span>${k===9?shortM(st.goal).replace(" тэрбум","т"):Math.round(val/1e6)}</span></div>`}).join("");
+}
+function dur(m){const y=Math.floor(m/12),r=m%12;return (y?y+" жил ":"")+(r||!y?r+" сар":"").trim()}
+function drawChart(){
+  const st=S.settings,{lo,md,hi,cur,n}=chartData,W=350,H=206,X0=36,X1=344,Y0=180,Y1=14;
+  const maxV=Math.max(st.goal*1.1,hi[n]*1.02),stepV=maxV>3e9?1e9:maxV>1.4e9?4e8:2e8;
+  const x=k=>X0+(X1-X0)*k/n,y=val=>Y0-(Y0-Y1)*Math.min(val,maxV)/maxV;
+  const ln=a=>a.map((val,k)=>(k?"L":"M")+x(k).toFixed(1)+" "+y(val).toFixed(1)).join("");
+  const band=ln(hi)+lo.slice().reverse().map((val,j)=>"L"+x(n-j).toFixed(1)+" "+y(val).toFixed(1)).join("")+"Z";
+  let grid="";for(let g=0;g<=maxV;g+=stepV)grid+=`<line x1="${X0}" x2="${X1}" y1="${y(g)}" y2="${y(g)}" stroke="var(--track)"/><text x="${X0-6}" y="${y(g)+3}" text-anchor="end" font-size="10" fill="var(--muted)">${Math.round(g/1e6)}</text>`;
+  const y0=+cur.slice(0,4),yMid=Math.round((y0+st.goalYear)/2);
+  const xt=[[0,y0,"start"],[mb(cur,yMid+"-12"),yMid,"middle"],[n,st.goalYear,"end"]].map(([k,t,a])=>`<text x="${x(Math.max(0,Math.min(n,k)))}" y="200" font-size="10" fill="var(--muted)" text-anchor="${a}">${t}</text>`).join("");
+  // actual history
+  const h=st.history||{},keys=Object.keys(h).sort().filter(k=>mb(k,cur)>=0);let act="";
+  if(keys.length){const pts=keys.map(k=>{const kk=-mb(k,cur);return {X:X0-(kk/n)*(X1-X0),Y:y(h[k])}}).filter(p=>p.X>=X0-1);
+    if(pts.length)act=`<circle cx="${pts[pts.length-1].X.toFixed(1)}" cy="${pts[pts.length-1].Y.toFixed(1)}" r="5" fill="var(--gold)" stroke="var(--surface)" stroke-width="2"/>`}
+  $("chart").innerHTML=`<svg id="csvg" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${st.goalYear} он гэхэд ${short(lo[n])}-аас ${short(hi[n])} хүртэл, суурь хувилбараар ${short(md[n])}">
+  ${grid}<path d="${band}" fill="var(--accent)" fill-opacity=".14"/>
+  <line x1="${X0}" x2="${X1}" y1="${y(st.goal)}" y2="${y(st.goal)}" stroke="var(--gold-ink)" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <text x="${X0+4}" y="${y(st.goal)-5}" font-size="10" fill="var(--gold-ink)" font-weight="600">Зорилго ${shortM(st.goal)}</text>
+  <path d="${ln(md)}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>${act}${xt}
+  <g id="scrub"><line id="sL" y1="${Y1}" y2="${Y0}" stroke="var(--ink)" stroke-dasharray="2 3"/><circle id="sC" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>
+  <rect id="sR" width="96" height="34" rx="8" fill="var(--btn)"/><text id="sT1" font-size="10" fill="var(--btn-ink)" opacity=".75" text-anchor="middle"></text><text id="sT2" font-size="12" font-weight="700" fill="var(--btn-ink)" text-anchor="middle"></text></g>
+  <rect x="${X0}" y="0" width="${X1-X0}" height="${H}" fill="transparent" id="hit"/></svg>`;
+  const setScrub=k=>{k=Math.max(0,Math.min(n,k));const X=x(k),Y=y(md[k]),tx=Math.max(X0+48,Math.min(X1-48,X)),ty=Math.max(2,Y-46);const yy=addM(cur,k);
+    $("sL").setAttribute("x1",X);$("sL").setAttribute("x2",X);$("sC").setAttribute("cx",X);$("sC").setAttribute("cy",Y);
+    $("sR").setAttribute("x",tx-48);$("sR").setAttribute("y",ty);$("sT1").setAttribute("x",tx);$("sT1").setAttribute("y",ty+13);$("sT2").setAttribute("x",tx);$("sT2").setAttribute("y",ty+28);
+    $("sT1").textContent=ymDot(yy);$("sT2").textContent=short(md[k]).replace("₮","₮")};
+  setScrub(Math.round(n*0.6));
+  const svg=$("csvg"),hit=$("hit");
+  const mv=e=>{const r=svg.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*W;setScrub(Math.round((px-X0)/(X1-X0)*n))};
+  hit.addEventListener("pointerdown",e=>{mv(e);hit.setPointerCapture?.(e.pointerId)});hit.addEventListener("pointermove",e=>{if(e.buttons||e.pointerType==="mouse")mv(e)});
+}
+
+// ---------- assets ----------
+function renderAssets(){
+  const {v,i}=totals(),has=S.holdings.length>0;
+  $("aSub").textContent=has?S.holdings.length+" хөрөнгө · "+fmt(v):"Бүртгэл хоосон";
+  const byT={};S.holdings.forEach(h=>byT[h.type]=(byT[h.type]||0)+valueOf(h));
+  const ents=Object.entries(byT).sort((a,b)=>b[1]-a[1]);
+  $("allocCard").hidden=!has;
+  $("alloc").innerHTML=ents.map(([t,x])=>`<div style="width:${(x/v*100).toFixed(2)}%;background:${TCOL[t]}"></div>`).join("");
+  $("allocLg").innerHTML=ents.map(([t,x])=>`<span><i style="width:10px;height:10px;border-radius:3px;background:${TCOL[t]}"></i>${TYPES[t]} ${Math.round(x/v*100)}%</span>`).join("");
+  const L=$("list");L.innerHTML="";
+  if(!has)L.innerHTML='<div class="empty" style="padding:12px 0"><p>Хөрөнгө алга. "Шинэ" товчоор эхний хөрөнгөө нэмээрэй.</p></div>';
+  S.holdings.slice().sort((a,b)=>valueOf(b)-valueOf(a)).forEach(h=>{
+    const val=valueOf(h),inv=invested(h),g=val-inv;let sub=TYPES[h.type]+(h.rate?" · "+h.rate+"%":"");let icon=`<span class="badge">${SHORT[h.type]}</span>`;
+    if(auto(h)&&h.maturity){const tot=Math.max(1,(new Date(h.maturity)-new Date(h.start||h.maturity))/864e5),left=Math.ceil((new Date(h.maturity)-new Date())/864e5),f=Math.max(0,Math.min(1,1-left/tot)),C=2*Math.PI*19;
+      sub=ymDot(h.maturity).replace("-",".")+" · "+(left>0?left+" хоног үлдсэн":"хугацаа дууссан");
+      icon=`<svg width="44" height="44" viewBox="0 0 44 44" role="img" aria-label="Хугацааны ${Math.round(f*100)}% өнгөрсөн"><circle cx="22" cy="22" r="19" fill="var(--gold-soft)" stroke="var(--gold-track)" stroke-width="4"/><circle cx="22" cy="22" r="19" fill="none" stroke="var(--gold)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${Math.max(2,C*f).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 22 22)"/><text x="22" y="25.5" text-anchor="middle" font-size="9" font-weight="700" fill="var(--gold-ink)">${SHORT[h.type]}</text></svg>`}
+    const b=document.createElement("button");b.type="button";b.className="item";
+    b.innerHTML=`${icon}<span class="stack"><span class="nm"></span><span class="b"></span></span><span class="amt num"><b>${short(val)}</b><small class="${g<0?"neg":""}">${g>=0?"+":""}${short(g)}${inv>0?" ("+(g>=0?"+":"")+Math.round(g/inv*100)+"%)":""}</small></span>`;
+    b.querySelector(".nm").textContent=h.name;b.querySelector(".b").textContent=sub;b.onclick=()=>openDetail(h.id);L.appendChild(b)});
+  const tx=[];S.holdings.forEach(h=>(h.deposits||[]).forEach(d=>tx.push({d:d.d,a:d.a,n:h.name,o:d.open})));
+  tx.sort((a,b)=>b.d.localeCompare(a.d));
+  $("txs").innerHTML=tx.length?tx.slice(0,5).map(t=>`<div class="tx num"><span>${t.d.slice(5).replace("-",".")} · ${esc(t.n)}</span><span style="font-weight:600">${t.o?"Эхний үлдэгдэл":"+"+fmt(t.a)}</span></div>`).join(""):'<p class="note">Гүйлгээ алга</p>';
+  const bs=badges();$("medalCount").textContent=bs.filter(b=>b.on).length+" / "+bs.length;
+  const IC={check:'<path d="M5 12l4 4 10-10"/>',plus:'<path d="M12 5v14M5 12h14"/>',bond:'<path d="M4 7h16v12H4zM8 7V5h8v2"/>',fire:'<path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5.3 1.8 1.2 2.8 2.2 3C10.5 9 11 6 12 3z"/>'};
+  const LOCK='<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>';
+  $("medals").innerHTML=bs.map(b=>`<div class="medal ${b.on?"on":"off"}"><i><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${b.on?IC[b.ic]:LOCK}</svg></i><span>${b.label}</span></div>`).join("");
+}
+
+// ---------- storage (Firebase) ----------
+const FBV="https://www.gstatic.com/firebasejs/10.12.2/";
+let F=null,user=null,unsub=null,syncState="";
+function recordHistory(){const {v}=totals();S.settings.history={...(S.settings.history||{}),[ym()]:Math.round(v)}}
+function ref(id){return F.doc(F.db,"users",user.uid,"items",id)}
+function writeErr(e){console.warn(e);toast("Үүлэнд хадгалж чадсангүй ("+(e&&e.code||"алдаа")+"). Дахин оролдоно уу.")}
+function put(id,obj){if(!F||!user)return;F.setDoc(ref(id),clone(obj)).catch(writeErr)}
+function persistSettings(){put("settings",S.settings)}
+function earnedSet(){return new Set(badges().filter(b=>b.on).map(b=>b.id))}
+function saveHolding(h,msg){
+  const before=earnedSet(),r0=perSec(totals().v);
+  const k=S.holdings.findIndex(x=>x.id===h.id);if(k>=0)S.holdings[k]=h;else S.holdings.push(h);
+  recordHistory();render();put(h.id,h);persistSettings();
+  const after=badges().filter(b=>b.on&&!before.has(b.id)),dr=(perSec(totals().v)-r0)*86400;
+  if(after.length)celebrate(after[0]);else toast(msg||(dr>1?"Хадгаллаа · өдрийн өсөлт +"+fmt(dr)+" нэмэгдлээ":"Хадгаллаа"));
+}
+function deleteHolding(id){S.holdings=S.holdings.filter(x=>x.id!==id);recordHistory();render();
+  if(F&&user)F.deleteDoc(ref(id)).catch(writeErr);persistSettings();toast("Устгалаа")}
+function updSync(){const n=$("storeNote");if(!n)return;if(!user){n.textContent="";return}
+  n.textContent=syncState==="ok"?"Үүлэнд хадгалагдсан · "+user.email:syncState==="pending"?"Үүлэнд хадгалж байна… Интернэт холбогдмогц синк хийнэ.":"Интернэтгүй байна. Өгөгдөл утсан дээр хадгалагдсан, холбогдмогц синк хийнэ."}
+function subscribe(){
+  if(unsub)unsub();
+  unsub=F.onSnapshot(F.collection(F.db,"users",user.uid,"items"),{includeMetadataChanges:true},snap=>{
+    const hs=[];let st=null;
+    snap.docs.forEach(d=>{if(d.id==="settings")st=d.data();else if(d.id.startsWith("h-"))hs.push(clone(d.data()))});
+    S.settings={...DEF,...(st?clone(st):{})};S.holdings=hs;loaded=true;
+    syncState=snap.metadata.hasPendingWrites?"pending":snap.metadata.fromCache?"cache":"ok";render();
+  },e=>{console.warn(e);toast("Өгөгдөл уншиж чадсангүй ("+(e.code||"алдаа")+")")});
+}
+async function init(){
+  route();render();
+  if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  const cfg=window.FIREBASE_CONFIG;
+  if(!cfg||!cfg.apiKey||/ЭНД_БИЧНЭ/.test(cfg.apiKey)){showGate("config");return}
+  try{
+    const [app,auth,fs]=await Promise.all([import(FBV+"firebase-app.js"),import(FBV+"firebase-auth.js"),import(FBV+"firebase-firestore.js")]);
+    const a=app.initializeApp(cfg);
+    let db;try{db=fs.initializeFirestore(a,{localCache:fs.persistentLocalCache({tabManager:fs.persistentSingleTabManager()})})}catch(e){db=fs.getFirestore(a)}
+    const au=auth.getAuth(a);
+    F={db,auth:au,A:auth,doc:fs.doc,setDoc:fs.setDoc,deleteDoc:fs.deleteDoc,collection:fs.collection,onSnapshot:fs.onSnapshot,writeBatch:fs.writeBatch};
+    auth.onAuthStateChanged(au,u=>{user=u;
+      if(u){hideGate();subscribe()}
+      else{if(unsub)unsub();unsub=null;S={settings:{...DEF},holdings:[]};loaded=false;render();showGate("login")}});
+  }catch(e){console.warn(e);showGate("offline")}
+}
+
+// ---------- gate (нэвтрэх) ----------
+function showGate(mode){const g=$("gate");g.hidden=false;["config","login","offline"].forEach(m=>$("g-"+m).hidden=m!==mode);if(mode==="login")setTimeout(()=>$("gEmail").focus(),50)}
+function hideGate(){$("gate").hidden=true}
+function authMsg(e){const c=e&&e.code||"";return({
+  "auth/invalid-credential":"Имэйл эсвэл нууц үг буруу байна.","auth/wrong-password":"Имэйл эсвэл нууц үг буруу байна.","auth/user-not-found":"Имэйл эсвэл нууц үг буруу байна.",
+  "auth/email-already-in-use":"Энэ имэйлээр бүртгэл аль хэдийн байна. Нэвтэрнэ үү.","auth/weak-password":"Нууц үг хамгийн багадаа 6 тэмдэгт байх ёстой.",
+  "auth/invalid-email":"Имэйл хаяг буруу байна.","auth/missing-password":"Нууц үгээ оруулна уу.","auth/network-request-failed":"Интернэт холболтоо шалгана уу.",
+  "auth/too-many-requests":"Хэт олон оролдлого хийлээ. Түр хүлээгээд дахин оролдоно уу.","auth/admin-restricted-operation":"Шинэ бүртгэл үүсгэхийг хаасан байна.",
+  "auth/operation-not-allowed":"Firebase дээр Email/Password нэвтрэлтийг идэвхжүүлээгүй байна (ЗААВАР, 4-р алхам)."}[c]||"Алдаа гарлаа: "+c)}
+function gateBusy(on){["gIn","gUp","gReset"].forEach(i=>$(i).disabled=on)}
+$("gIn").onclick=()=>{const em=$("gEmail").value.trim(),pw=$("gPw").value;$("gErr").textContent="";if(!F)return;gateBusy(true);
+  F.A.signInWithEmailAndPassword(F.auth,em,pw).catch(e=>$("gErr").textContent=authMsg(e)).finally(()=>gateBusy(false))};
+$("gUp").onclick=()=>{const em=$("gEmail").value.trim(),pw=$("gPw").value;$("gErr").textContent="";if(!F)return;gateBusy(true);
+  F.A.createUserWithEmailAndPassword(F.auth,em,pw).catch(e=>$("gErr").textContent=authMsg(e)).finally(()=>gateBusy(false))};
+$("gReset").onclick=()=>{const em=$("gEmail").value.trim();if(!em){$("gErr").textContent="Эхлээд имэйлээ бичнэ үү.";return}if(!F)return;
+  F.A.sendPasswordResetEmail(F.auth,em).then(()=>$("gErr").textContent="Нууц үг сэргээх холбоосыг "+em+" руу илгээлээ.").catch(e=>$("gErr").textContent=authMsg(e))};
+$("gPw").addEventListener("keydown",e=>{if(e.key==="Enter")$("gIn").click()});
+
+// ---------- backup ----------
+function bindAccount(q,close){
+  q("#bExp").onclick=()=>{const data={app:"terbum",v:1,exportedAt:new Date().toISOString(),settings:S.settings,holdings:S.holdings};
+    const name="terbum-nuuts-"+todayStr()+".json",blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    let file=null;try{file=new File([blob],name,{type:"application/json"})}catch(e){}
+    if(file&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:"Тэрбумын зам — нөөц"}).catch(()=>{})}
+    else{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}};
+  const fi=q("#fImp"),bi=q("#bImp");let pending=null;
+  bi.onclick=()=>{if(pending){restore(pending);close();return}fi.click()};
+  fi.onchange=async()=>{const f=fi.files[0];if(!f)return;try{const d=JSON.parse(await f.text());
+      if(d.app!=="terbum"||!Array.isArray(d.holdings))throw 0;pending=d;
+      bi.textContent="Одоогийн өгөгдлийг "+d.holdings.length+" хөрөнгөөр солих уу? Дахин дарж баталгаажуулна уу";bi.classList.add("danger")}
+    catch(e){toast("Энэ файл Тэрбумын замын нөөц биш байна.")}};
+  const bo=q("#bOut");bo.onclick=()=>{if(bo.dataset.c){close();F.A.signOut(F.auth)}else{bo.dataset.c="1";bo.textContent="Дахин дарж гарахыг баталгаажуулна уу"}};
+}
+function restore(d){if(!F||!user)return;const b=F.writeBatch(F.db),ids=new Set(d.holdings.map(h=>h.id));
+  S.holdings.forEach(h=>{if(!ids.has(h.id))b.delete(ref(h.id))});
+  d.holdings.forEach(h=>{if(h&&typeof h.id==="string"&&h.id.startsWith("h-"))b.set(ref(h.id),clone(h))});
+  b.set(ref("settings"),clone({...DEF,...(d.settings||{})}));
+  b.commit().then(()=>toast("Нөөцөөс сэргээлээ")).catch(writeErr);
+  S.settings={...DEF,...(d.settings||{})};S.holdings=clone(d.holdings);render();toast("Нөөцөөс сэргээж байна…")}
+
+// ---------- routing ----------
+function route(){const h=(location.hash||"#home").slice(1);tab=["home","counter","plan","assets"].includes(h)?h:"home";
+  ["home","counter","plan","assets"].forEach(t=>$(t).hidden=t!==tab);
+  document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.tab===tab)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  document.body.classList.toggle("dark-screen",tab==="counter");setCounterRunning(tab==="counter");if(tab==="counter")tickCounter();window.scrollTo(0,0)}
+window.addEventListener("hashchange",route);
+
+// ---------- sheets ----------
+function sheet(html,mount){const host=$("sheetHost");host.innerHTML=`<div class="scrim"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
+  const sc=host.firstChild,close=()=>{host.innerHTML=""};sc.addEventListener("click",e=>{if(e.target===sc)close()});
+  sc.addEventListener("keydown",e=>{if(e.key==="Escape")close()});const el=sc.querySelector(".sheet");mount(el,close);el.querySelector("input,select,button")?.focus()}
+const typeOpts=sel=>Object.entries(TYPES).map(([k,v])=>`<option value="${k}"${k===sel?" selected":""}>${v}</option>`).join("");
+function openForm(h){
+  const ed=!!h;h=h||{type:"bond",rate:20,start:todayStr(),maturity:"",name:"",deposits:[]};
+  sheet(`<h3>${ed?"Засах":"Шинэ хөрөнгө"}</h3>
+  <label class="f">Нэр<input id="fName" value="${esc(h.name)}" placeholder="Жишээ: Бонд 2027"></label>
+  <div class="r2"><label class="f">Төрөл<select id="fType">${typeOpts(h.type)}</select></label>
+  <label class="f">Жилийн хүү (%)<input id="fRate" type="number" inputmode="decimal" step="0.1" value="${h.rate??""}"></label></div>
+  ${ed?"":`<label class="f">Хийсэн дүн (₮)<input id="fAmt" type="number" inputmode="numeric" placeholder="1000000"></label>`}
+  <div class="r2"><label class="f">Эхэлсэн огноо<input id="fStart" type="date" value="${h.start||todayStr()}"></label>
+  <label class="f">Дуусах огноо<input id="fMat" type="date" value="${h.maturity||""}"></label></div>
+  <label class="f" id="fValW">Одоогийн үнэ цэнэ (₮)<input id="fVal" type="number" inputmode="numeric" value="${h.value||""}" placeholder="Хоосон бол хийсэн дүнгээр тооцно"></label>
+  <p class="note" id="fHint"></p>
+  <div class="acts"><button class="btn ghost" id="fC" type="button">Болих</button><button class="btn green" id="fS" type="button">Хадгалах</button></div>`,
+  (el,close)=>{const q=s=>el.querySelector(s);
+    const upd=()=>{const a=auto({type:q("#fType").value});q("#fValW").hidden=a;q("#fHint").textContent=a?"Бонд, хадгаламж, P2P зээлийн үнэ цэнийг хүүгээр нь өдөр бүр автоматаар тооцно.":"Үнэ цэнэ өөрчлөгдөх бүрд шинэчилж байгаарай."};
+    q("#fType").onchange=upd;upd();q("#fC").onclick=close;
+    q("#fS").onclick=()=>{const name=q("#fName").value.trim();if(!name){q("#fName").focus();return}
+      const n={...h,id:h.id||"h-"+uid(),name,type:q("#fType").value,rate:+q("#fRate").value||0,start:q("#fStart").value,maturity:q("#fMat").value,value:+q("#fVal").value||0};
+      if(!ed){const a=+q("#fAmt").value||0;n.deposits=a?[{d:n.start||todayStr(),a}]:[];if(n.value===0&&!auto(n))n.value=a}
+      close();saveHolding(n)}});
+}
+function openDeposit(pre){
+  if(!S.holdings.length){openForm();return}
+  const tg=targetFor(ym()),left=Math.max(0,tg-monthDeposits(ym()));
+  const def=pre||(S.holdings.find(h=>h.type!=="fund")||S.holdings[0]).id;
+  sheet(`<h3>Мөнгө хийх</h3>
+  <label class="f">Хаана<select id="dH">${S.holdings.map(h=>`<option value="${h.id}"${h.id===def?" selected":""}>${esc(h.name)}</option>`).join("")}</select></label>
+  <div class="r2"><label class="f">Дүн (₮)<input id="dA" type="number" inputmode="numeric" value="${Math.round(left||tg)}"></label>
+  <label class="f">Огноо<input id="dD" type="date" value="${todayStr()}"></label></div>
+  <p class="note">Энэ сарын зорилт ${fmt(tg)} · үлдсэн ${fmt(left)}</p>
+  <div class="acts"><button class="btn ghost" id="dC" type="button">Болих</button><button class="btn green" id="dS" type="button">Нэмэх</button></div>`,
+  (el,close)=>{const q=s=>el.querySelector(s);q("#dC").onclick=close;
+    q("#dS").onclick=()=>{const h=S.holdings.find(x=>x.id===q("#dH").value),a=+q("#dA").value;if(!h||!(a>0)){q("#dA").focus();return}
+      const n=clone(h);n.deposits=[...(n.deposits||[]),{d:q("#dD").value||todayStr(),a}];if(!auto(n))n.value=(+n.value||invested(h))+a;close();saveHolding(n)}});
+}
+function openDetail(id){
+  const h=S.holdings.find(x=>x.id===id);if(!h)return;const a=auto(h);
+  const rows=(h.deposits||[]).slice().sort((x,y)=>y.d.localeCompare(x.d)).map(d=>`<div class="tx num"><span>${d.d.replace(/-/g,".")}</span><span>${d.open?"Эхний үлдэгдэл · ":""}${fmt(d.a)}</span></div>`).join("")||'<p class="note">Бүртгэл алга</p>';
+  let mat="";if(a&&h.maturity&&h.rate){const yrs=(new Date(h.maturity)-Date.now())/YS/1000;if(yrs>0)mat=`<p class="note">Хугацаа дуусахад ойролцоогоор <b class="num">${fmt(valueOf(h)*Math.pow(1+h.rate/100,yrs))}</b> болно (хүүгийн орлогын 10% татварын өмнө).</p>`}
+  sheet(`<h3>${esc(h.name)}</h3>
+  <div class="g2"><div class="tile" style="background:var(--bg)"><span class="k">Үнэ цэнэ</span><span class="v num">${short(valueOf(h))}</span></div><div class="tile" style="background:var(--bg)"><span class="k">Хийсэн</span><span class="v num">${short(invested(h))}</span></div></div>
+  ${mat}
+  ${a?"":`<label class="f">Одоогийн үнэ цэнийг шинэчлэх (₮)<input id="uV" type="number" inputmode="numeric" value="${Math.round(valueOf(h))}"></label><button class="btn ghost" id="uS" type="button">Үнэ цэнэ хадгалах</button>`}
+  <h2 style="margin:0;font-size:14px">Түүх</h2><div style="max-height:180px;overflow:auto">${rows}</div>
+  <div class="acts"><button class="btn green" id="xD" type="button">+ Мөнгө хийх</button><button class="btn ghost" id="xE" type="button">Засах</button></div>
+  <button class="btn danger" id="xX" type="button">Устгах</button>`,
+  (el,close)=>{const q=s=>el.querySelector(s);
+    q("#xD").onclick=()=>{close();openDeposit(id)};q("#xE").onclick=()=>{close();openForm(clone(h))};
+    const x=q("#xX");x.onclick=()=>{if(x.dataset.c){close();deleteHolding(id)}else{x.dataset.c="1";x.textContent="Дахин дарж устгахыг баталгаажуулна уу"}};
+    const u=q("#uS");if(u)u.onclick=()=>{const v=+q("#uV").value;if(v>0){close();saveHolding({...clone(h),value:v},"Үнэ цэнэ шинэчлэгдлээ")}}});
+}
+function openSettings(){
+  const s=S.settings;
+  sheet(`<h3>Тохиргоо</h3>
+  <div class="r2"><label class="f">Зорилго (₮)<input id="sG" type="number" value="${s.goal}"></label><label class="f">Хүрэх он<input id="sY" type="number" value="${s.goalYear}"></label></div>
+  <div class="r2"><label class="f">Сарын нэмэлт (эхний жил)<input id="sM" type="number" value="${s.monthly}"></label><label class="f">Жил бүр нэмэх (%)<input id="sGr" type="number" step="0.5" value="${s.growth}"></label></div>
+  <div class="r2"><label class="f">Хүлээгдэж буй өгөөж (%)<input id="sR" type="number" step="0.5" value="${s.ret}"></label><label class="f">Сангийн сарын шимтгэл (2 тал)<input id="sF" type="number" value="${s.fundMonthly}"></label></div>
+  <p class="note">Суурь төлөвлөгөө ${ymDot(s.startYM)}-ын ${short(s.startTotal)}-өөс эхэлж тооцогдоно. 12-р сард сангийн шимтгэл давхар орно гэж үзсэн.</p>
+  <h2 style="margin:8px 0 0;font-size:14px">Бүртгэл ба нөөц</h2>
+  <p class="note">${user?esc(user.email):""} · Өгөгдөл үүлэнд автоматаар хадгалагдана. Нэмэлт хамгаалалт болгож хааяа нөөц файл татаж iCloud Drive-даа хадгалаарай.</p>
+  <div class="r2"><button class="btn ghost" id="bExp" type="button" style="font-size:14px">Нөөц файл татах</button><button class="btn ghost" id="bImp" type="button" style="font-size:14px;height:auto;min-height:52px">Нөөцөөс сэргээх</button></div>
+  <input type="file" id="fImp" accept="application/json,.json" hidden>
+  <button class="btn danger" id="bOut" type="button">Гарах</button>
+  <div class="acts"><button class="btn ghost" id="sC" type="button">Болих</button><button class="btn green" id="sS" type="button">Хадгалах</button></div>`,
+  (el,close)=>{const q=s=>el.querySelector(s),g=k=>+q(k).value;q("#sC").onclick=close;bindAccount(q,close);
+    q("#sS").onclick=async()=>{S.settings={...s,goal:g("#sG")>0?g("#sG"):DEF.goal,goalYear:Math.max(new Date().getFullYear()+1,Math.min(2080,g("#sY")||DEF.goalYear)),monthly:Math.max(0,g("#sM")),growth:Math.max(0,g("#sGr")),ret:Math.max(0,Math.min(40,g("#sR"))),fundMonthly:Math.max(0,g("#sF"))};
+      close();render();try{await persistSettings();toast("Тохиргоо хадгалагдлаа")}catch(e){toast("Хадгалж чадсангүй")}}});
+}
+let tt;function toast(m){document.querySelector(".toast")?.remove();const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.textContent=m;document.body.appendChild(t);clearTimeout(tt);tt=setTimeout(()=>t.remove(),2600)}
+function celebrate(b){const c=document.createElement("div");c.className="celebrate";c.innerHTML=`<div class="box" role="dialog" aria-modal="true"><i><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M8.5 14 7 22l5-3 5 3-1.5-8"/></svg></i><b>Шинэ тэмдэг!</b><p>${esc(b.label)}</p><button class="btn green sm" type="button" style="width:100%">Гайхалтай</button></div>`;
+  document.body.appendChild(c);const bt=c.querySelector("button");bt.focus();bt.onclick=()=>c.remove();c.onclick=e=>{if(e.target===c)c.remove()}}
+
+$("btnSettings").onclick=openSettings;$("btnDeposit").onclick=()=>openDeposit();$("btnAdd").onclick=()=>openForm();
+$("heroBtn").onclick=()=>{location.hash="counter"};$("nextBadge").onclick=()=>{location.hash="plan"};
+$("bondAlert").onclick=()=>openDetail($("bondAlert").dataset.id);
+$("seedFund").onclick=()=>saveHolding({id:"h-"+uid(),name:"Хуримтлалын сан",type:"fund",rate:15,start:"2023-09-01",maturity:"",value:11654002,deposits:[{d:"2026-10-27",a:9327000,open:true}]},"Хуримтлалын сан нэмэгдлээ");
+init();
+})();
+</script>
+</body>
+</html>
