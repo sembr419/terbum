@@ -1,5 +1,5 @@
 // Апп-ыг интернэтгүй үед ажиллуулах service worker
-const CACHE = "terbum-v1";
+const CACHE = "terbum-v2";
 const SHELL = ["./", "./index.html", "./config.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {
