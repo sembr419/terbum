@@ -127,6 +127,7 @@ svg text{font-family:var(--body)}
 .legend i{display:inline-block;width:14px;height:3px;border-radius:2px}
 .opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .opt{height:44px;border-radius:12px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.opt:disabled{opacity:.45}
 .opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
 .reach{display:flex;justify-content:space-between;align-items:center;background:var(--accent-soft);border-radius:12px;padding:10px 12px;gap:8px}
 .reach span:first-child{font-size:13px;color:var(--muted)}
@@ -155,12 +156,20 @@ svg text{font-family:var(--body)}
 .medal.on i{background:var(--gold);color:#fff}
 .medal.off i{border:2px dashed var(--line);color:var(--muted)}
 .medal.off span{color:var(--muted)}
+.stbl{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-variant-numeric:tabular-nums;font-size:14px}
+.stbl>div{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border-top:1px solid var(--track)}
+.stbl>div:first-child{border-top:0}
+.stbl .sh,.stbl .sf{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.stbl .pd{color:var(--muted)}
+.stbl span:last-child{text-align:right;display:flex;flex-direction:column;align-items:flex-end}
+.stbl small{font-size:11px;color:var(--muted);font-weight:400}
 .empty{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
 .empty p{margin:0;color:var(--muted)}
 .note{font-size:12px;color:var(--muted);margin:0}
 /* sheets */
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:30;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--surface);color:var(--ink);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:18px max(18px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px}
+.sheet>*{flex-shrink:0}
 .sheet h3{margin:0;font-family:var(--display);font-weight:500;font-size:16px}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:0}
 input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px;width:100%;min-width:0;min-height:44px}
@@ -217,9 +226,14 @@ input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid
     <span class="pill" id="hStatus">Ачаалж байна…</span>
   </button>
   <div id="homeEmpty" class="card" hidden>
-    <div class="empty"><p>Эхлээд хуримтлалын сангаа нэмье. 2026.10-ын байдлаар үлдэгдэл нь 11,654,002₮ (хийсэн мөнгө 9,327,000₮).</p>
+    <div class="empty"><p>Хуримтлалын сан бүртгэгдээгүй байна. 2026.10-ын байдлаар үлдэгдэл нь 11,654,002₮ (хийсэн мөнгө 9,327,000₮).</p>
     <button class="btn green sm" id="seedFund" type="button">Хуримтлалын сангаа нэмэх</button></div>
   </div>
+  <button class="row-link" id="fundCard" type="button" hidden>
+    <span class="circle" style="background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:700">САН</span>
+    <span class="stack"><span class="a" style="display:flex;justify-content:space-between;gap:8px"><span>Хуримтлалын сан</span><span class="num" id="fcV"></span></span>
+    <span class="b" style="display:flex;justify-content:space-between;gap:8px"><span id="fcU"></span><span class="num" id="fcG" style="color:var(--good);font-weight:600"></span></span></span>
+  </button>
   <div class="g2">
     <div class="tile"><span class="k">Энэ сарын зорилт</span><span class="v num" id="mTarget">—</span><span class="s" id="mDone"></span><div class="meter"><i id="mBar" style="width:0"></i></div></div>
     <div class="tile"><span class="k">Цуврал</span><span class="v"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5.3 1.8 1.2 2.8 2.2 3C10.5 9 11 6 12 3z"/></svg><span id="stN">0 сар</span></span><span class="s">Зорилтоо дараалан биелүүлсэн</span><div class="streak" id="stDots"></div></div>
@@ -232,7 +246,11 @@ input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>
     <span class="stack"><span class="a" id="baA" style="font-size:14px"></span><span class="b" id="baB"></span></span>
   </button>
-  <button class="btn" id="btnDeposit" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Мөнгө хийх</button>
+  <button class="row-link" id="nextCoupon" type="button" hidden>
+    <span class="circle" style="background:var(--accent-soft);color:var(--accent)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M12 14v3M10.5 15.5h3"/></svg></span>
+    <span class="stack"><span class="a" id="ncA"></span><span class="b" id="ncB"></span></span>
+  </button>
+  <button class="btn" id="btnDeposit" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Хөрөнгө оруулалт бүртгэх</button>
   <p class="note" id="storeNote"></p>
 </section>
 
@@ -261,6 +279,7 @@ input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid
     <div><span>Өдөрт</span><span id="rD">—</span></div>
     <div><span>Сард</span><span id="rM">—</span></div>
   </div>
+  <div class="c-rates num" id="cBreak"></div>
   <div class="c-future"><span class="k" id="futK">2041 онд таны мөнгө</span><span class="v num" id="futV">—</span><span class="s" id="futS"></span></div>
   <p class="c-note" id="cNote"></p>
 </section>
@@ -292,6 +311,7 @@ input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid
     <div class="t"><h1>Хөрөнгө</h1><small class="num" id="aSub"></small></div>
     <button class="btn green sm" id="btnAdd" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Шинэ</button>
   </div>
+  <div class="card" id="cpCard" hidden><h2>Хүүгийн хуваарь <small id="cpSub"></small></h2><div id="cpChart"></div><div id="cpList"></div></div>
   <div class="card" id="allocCard"><h2>Хуваарилалт</h2><div class="alloc" id="alloc"></div><div class="legend num" id="allocLg"></div></div>
   <div class="card" style="padding:4px 14px"><div id="list"></div></div>
   <div class="card"><h2>Сүүлийн гүйлгээ</h2><div id="txs"></div></div>
@@ -311,9 +331,9 @@ input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid
 <script type="module">
 (function(){
 "use strict";
-const TYPES={fund:"Хуримтлалын сан",bond:"Бонд",deposit:"Хадгаламж",p2p:"P2P зээл",stock:"Хувьцаа / ETF",other:"Бусад"};
-const SHORT={fund:"САН",bond:"БОНД",deposit:"ХАД",p2p:"P2P",stock:"ХУВ",other:"БУС"};
-const TCOL={fund:"var(--accent)",bond:"var(--gold)",deposit:"#4a7fb5",p2p:"#8a5cc2",stock:"var(--warn)",other:"var(--muted)"};
+const TYPES={fund:"Хуримтлалын сан",bond:"Бонд",deposit:"Хадгаламж",p2p:"P2P зээл",stock:"Хувьцаа",pack:"Багц / сан",other:"Бусад"};
+const SHORT={fund:"САН",bond:"БОНД",deposit:"ХАД",p2p:"P2P",stock:"ХУВ",pack:"БАГЦ",other:"БУС"};
+const TCOL={fund:"var(--accent)",bond:"var(--gold)",deposit:"#4a7fb5",p2p:"#8a5cc2",stock:"var(--warn)",pack:"#2f8f9d",other:"var(--muted)"};
 const DEF={goal:1e9,goalYear:2041,ret:15,monthly:600000,growth:10,fundMonthly:300000,startTotal:11654002,startYM:"2026-10",history:{}};
 const YS=31557600, MILES=[1e7,2.5e7,5e7,1e8,2.5e8,5e8,1e9];
 let S={settings:{...DEF},holdings:[]}, store=null, loaded=false, tab="home", pick=1;
@@ -334,9 +354,32 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 
 // ---------- model ----------
 const auto=h=>h.type==="bond"||h.type==="deposit"||h.type==="p2p";
-const invested=h=>(h.deposits||[]).reduce((s,d)=>s+(+d.a||0),0);
+function allDeps(h){const b=h.deposits||[],R=h.recur;if(!R||!(+R.a>0)||!R.from)return b;
+  const t=todayStr(),end=h.maturity&&h.maturity<t?h.maturity:t,g=[];
+  for(let k=0;k<600;k++){const d=addMonthsDate(R.from,k);if(d>end)break;g.push({d,a:+R.a,auto:true})}return b.concat(g)}
+function materialize(h){const n=clone(h);n.deposits=allDeps(h).map(x=>x.open?{d:x.d,a:x.a,open:true}:{d:x.d,a:x.a});n.recur=null;return n}
+function nextRecur(h){const R=h.recur;if(!R||!R.from)return null;const t=todayStr();for(let k=0;k<600;k++){const d=addMonthsDate(R.from,k);if(h.maturity&&d>h.maturity)return null;if(d>t)return d}return null}
+const invested=h=>allDeps(h).reduce((s,d)=>s+(+d.a||0),0);
+const effRate=h=>(+h.rate||0)/100*(1-(+h.fee||0)/100);
+const FREQ={1:"Сар бүр",3:"Улирал бүр",6:"Хагас жил тутам",12:"Жил бүр",0:"Хугацааны эцэст"};
+const isCoupon=h=>h.type==="bond"&&(+h.rate>0)&&!!h.maturity;
+const freqOf=h=>h.freq==null?3:+h.freq;
+const dDiff=(a,b)=>(new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/864e5;
+const minD=(a,b)=>a<b?a:b,maxD=(a,b)=>a>b?a:b;
+function bondInt(h,from,to,net){const rr=(+h.rate||0)/100*(net?(1-(+h.fee||0)/100):1);to=minD(to,h.maturity);
+  return allDeps(h).reduce((s,d)=>{const f=maxD(from,d.d);return s+(to>f?d.a*rr*dDiff(f,to)/365:0)},0)}
+function couponSchedule(h){if(!isCoupon(h))return[];const f=freqOf(h),st=h.start||(allDeps(h)[0]||{}).d||todayStr(),dates=[],out=[];
+  if(f>0){for(let k=1;k<400;k++){const dt=addMonthsDate(st,k*f);if(dt>=h.maturity)break;dates.push(dt)}}dates.push(h.maturity);
+  const t=todayStr();let prev=st;dates.forEach(dt=>{const g=bondInt(h,prev,dt,false),n=bondInt(h,prev,dt,true);out.push({d:dt,gross:g,net:n,tax:g-n,paid:dt<=t,h});prev=dt});return out}
+function upcomingCoupons(){const t=todayStr();return S.holdings.filter(isCoupon).flatMap(couponSchedule).filter(c=>c.d>t).sort((a,b)=>a.d.localeCompare(b.d))}
+const kfmt=x=>x>=1e6?(x/1e6).toFixed(1)+"с":x>=1e3?Math.round(x/1e3)+"k":String(Math.round(x));
+const dotD=d=>d.replace(/-/g,".");
+const fmt2=n=>n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+"₮";
+function schedTable(sch,principal){if(!sch.length)return"";const tot=sch.reduce((x,c)=>x+c.net,0)+principal,last=sch.length-1;
+  return `<div class="stbl"><div class="sh"><span>Огноо</span><span>Дүн</span></div>${sch.map((c,k)=>`<div class="${c.paid?"pd":""}"><span>${c.paid?"✓ ":""}${dotD(c.d)}</span><span>${fmt2(c.net+(k===last?principal:0))}${k===last?`<small>хүү ${fmt2(c.net)} + үндсэн</small>`:""}</span></div>`).join("")}<div class="sf"><span>Нийт</span><span>${fmt2(tot)}</span></div></div>`}
 function valueOf(h){
-  if(auto(h)&&h.rate>0){const r=h.rate/100,now=Date.now();return (h.deposits||[]).reduce((s,d)=>s+d.a*Math.pow(1+r,Math.max(0,(now-new Date(d.d).getTime())/YS/1000)),0)}
+  if(isCoupon(h))return invested(h)+bondInt(h,"1900-01-01",todayStr(),true);
+  if(auto(h)&&h.rate>0){const r=effRate(h),now=Date.now();return allDeps(h).reduce((s,d)=>s+d.a*Math.pow(1+r,Math.max(0,(now-new Date(d.d).getTime())/YS/1000)),0)}
   return +h.value||invested(h);
 }
 function totals(){let v=0,i=0;S.holdings.forEach(h=>{v+=valueOf(h);i+=invested(h)});return{v,i}}
@@ -353,17 +396,22 @@ function sim(v0,ym0,n,ret,monthly,fundOn){
 function reachYM(v0,ym0,ret,monthly,fundOn){const st=S.settings,m=Math.pow(1+ret/100,1/12)-1,g=st.growth/100;let b=v0;if(b>=st.goal)return ym0;
   for(let k=1;k<=720;k++){const y=addM(ym0,k),yi=yearIdx(y),mon=+y.slice(5);b=b*(1+m)+monthly*Math.pow(1+g,yi)+(fundOn?st.fundMonthly*Math.pow(1+g,yi)*(mon===12?2:1):0);if(b>=st.goal)return y}return null}
 function basePlan(){const st=S.settings;return sim(st.startTotal,st.startYM,Math.max(1,mb(st.startYM,st.goalYear+"-12")),st.ret,st.monthly,true)}
-function monthDeposits(ymS){return S.holdings.filter(h=>h.type!=="fund").reduce((a,h)=>a+(h.deposits||[]).filter(d=>!d.open&&ym(d.d)===ymS).reduce((x,d)=>x+d.a,0),0)}
+function monthDeposits(ymS){return S.holdings.filter(h=>h.type!=="fund").reduce((a,h)=>a+allDeps(h).filter(d=>!d.open&&ym(d.d)===ymS).reduce((x,d)=>x+d.a,0),0)}
 function streak(){const st=S.settings,cur=ym();let n=0,y=cur;if(monthDeposits(cur)<targetFor(cur))y=addM(cur,-1);
   while(mb(st.startYM,y)>=0&&monthDeposits(y)>=targetFor(y)&&n<600){n++;y=addM(y,-1)}return n}
-function badges(){const {v}=totals(),sk=streak(),anyDep=S.holdings.some(h=>(h.deposits||[]).some(d=>!d.open&&h.type!=="fund"));
+function badges(){const {v}=totals(),sk=streak(),anyDep=S.holdings.some(h=>allDeps(h).some(d=>!d.open&&h.type!=="fund"));
   return [
     ...MILES.map(x=>({id:"m"+x,label:shortM(x)+"₮",on:v>=x,ic:"check"})),
     {id:"firstdep",label:"Анхны хөрөнгө оруулалт",on:anyDep,ic:"plus"},
     {id:"bond",label:"Анхны бонд",on:S.holdings.some(h=>h.type==="bond"),ic:"bond"},
     {id:"s3",label:"3 сар цуврал",on:sk>=3,ic:"fire"},{id:"s6",label:"6 сар цуврал",on:sk>=6,ic:"fire"},{id:"s12",label:"12 сар цуврал",on:sk>=12,ic:"fire"}];
 }
-function perSec(v){return v*Math.log(1+S.settings.ret/100)/YS}
+// Хөрөнгө бүрийн өөрийн хүүгээр секундын өсөлт
+function holdRate(h){const t=todayStr(),ret=S.settings.ret/100;
+  if(isCoupon(h)){if(h.maturity<=t)return{ps:0,pct:0};const pr=allDeps(h).filter(d=>d.d<=t).reduce((x,d)=>x+d.a,0),rn=(+h.rate||0)/100*(1-(+h.fee||0)/100);return{ps:pr*rn/365/86400,pct:rn*100}}
+  if(auto(h)&&h.rate>0){if(h.maturity&&h.maturity<=t)return{ps:0,pct:0};const re=effRate(h);return{ps:valueOf(h)*Math.log(1+re)/YS,pct:re*100}}
+  return{ps:valueOf(h)*Math.log(1+ret)/YS,pct:ret*100,est:true}}
+function perSec(){return S.holdings.reduce((x,h)=>x+holdRate(h).ps,0)}
 
 // ---------- render ----------
 function render(){
@@ -380,7 +428,12 @@ function render(){
   if(!loaded){hs.textContent="Ачаалж байна…";hs.className="pill"}
   else if(!has){hs.textContent="Эхний хөрөнгөө нэмээрэй";hs.className="pill"}
   else{const df=v-expect;hs.textContent="Төлөвлөгөөнөөс "+short(Math.abs(df))+(df>=0?" түрүүлж байна":" хоцорч байна");hs.className="pill"+(df<0?" behind":"")}
-  $("homeEmpty").hidden=!(loaded&&!has);
+  $("homeEmpty").hidden=!(loaded&&!hasFund());
+  const fh=S.holdings.find(h=>h.type==="fund"),fc=$("fundCard");fc.hidden=!fh;
+  if(fh){const fv=valueOf(fh),fi=invested(fh),fg=fv-fi;fc.dataset.id=fh.id;$("fcV").textContent=short(fv);
+    $("fcG").textContent=(fg>=0?"+":"")+short(fg)+(fi>0?" ("+(fg>=0?"+":"")+Math.round(fg/fi*100)+"%)":"");
+    const ua=fh.valueAt||((fh.deposits||[]).slice(-1)[0]||{}).d,dd=ua?Math.floor(dDiff(ua,todayStr())):null;
+    $("fcU").textContent=ua?("Шинэчилсэн "+dotD(ua)+(dd>35?" · шинэчлэх цаг болсон":"")):"Дарж үнэ цэнээ шинэчилнэ"}
   const tg=targetFor(cur),dn=monthDeposits(cur);
   $("mTarget").textContent=fmt(tg);const md=$("mDone");md.textContent=dn>=tg?"Биеллээ · "+Math.round(dn/tg*100)+"%":"Хийсэн: "+fmt(dn);md.className="s"+(dn>=tg?" ok":"");
   $("mBar").style.width=Math.min(100,dn/tg*100)+"%";
@@ -397,8 +450,10 @@ function render(){
   const bonds=S.holdings.filter(h=>auto(h)&&h.maturity).map(h=>({h,dd:Math.ceil((new Date(h.maturity)-new Date())/864e5)})).filter(x=>x.dd>=-30).sort((a,b)=>a.dd-b.dd);
   const ba=$("bondAlert");if(bonds.length){const b=bonds[0];ba.hidden=false;ba.dataset.id=b.h.id;
     $("baA").textContent=b.h.name+" · "+(b.dd>0?b.dd+" хоног үлдсэн":"хугацаа дууссан");
-    $("baB").textContent=b.dd>0?"Дуусахад ~"+fmt(valueOf(b.h)*Math.pow(1+b.h.rate/100,b.dd/365.25))+" болно. Хүүгээ дахин хөрөнгө оруулаарай.":"Мөнгөө дахин хөрөнгө оруулах эсвэл бүртгэлээ шинэчлээрэй."}
+    $("baB").textContent=b.dd>0?"Дуусахад ~"+fmt(isCoupon(b.h)?invested(b.h)+bondInt(b.h,"1900-01-01",b.h.maturity,true):valueOf(b.h)*Math.pow(1+effRate(b.h),b.dd/365.25))+" болно"+(b.h.fee?" (татварын дараа)":"")+". Хүүгээ дахин хөрөнгө оруулаарай.":"Мөнгөө дахин хөрөнгө оруулах эсвэл бүртгэлээ шинэчлээрэй."}
   else ba.hidden=true;
+  const nc=upcomingCoupons()[0],nce=$("nextCoupon");nce.hidden=!nc;
+  if(nc){$("ncA").textContent="Дараагийн хүү: "+dotD(nc.d)+" · ~"+fmt(nc.net);$("ncB").textContent=nc.h.name+" · "+Math.ceil(dDiff(todayStr(),nc.d))+" хоног үлдсэн"}
   renderPlan();renderAssets();renderCounterStatic();updSync();
 }
 function secsToday(){const d=new Date();return (d-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/1000}
@@ -409,10 +464,15 @@ let cBase=0,cT0=0,cRate=0,cTimer=null;
 function renderCounterStatic(){
   const st=S.settings,{v}=totals();cBase=v;cT0=Date.now();cRate=perSec(v);
   $("rS").textContent=cRate.toFixed(4)+"₮";$("rH").textContent=fmt(cRate*3600);$("rD").textContent=fmt(cRate*86400);$("rM").textContent="~"+fmt(cRate*86400*30.44);
+  const grp={};S.holdings.forEach(h=>{const hr=holdRate(h),g=grp[h.type]||(grp[h.type]={ps:0,v:0,pw:0,est:false}),hv=valueOf(h);g.ps+=hr.ps;g.v+=hv;g.pw+=hr.pct*hv;g.est=g.est||hr.est});
+  const ge=Object.entries(grp).filter(([,g])=>g.v>0).sort((a,b)=>b[1].ps-a[1].ps);
+  $("cBreak").hidden=!ge.length;
+  $("cBreak").innerHTML='<div style="border-bottom:0;padding-bottom:2px"><span style="font-size:12px;letter-spacing:.06em;text-transform:uppercase">Өдрийн өсөлт хаанаас</span><span></span></div>'+
+    ge.map(([t,g])=>`<div><span>${TYPES[t]} <small style="opacity:.7">· ${parseFloat((g.pw/g.v).toFixed(2))}%${g.est?" (таамаг)":""}</small></span><span>+${fmt(g.ps*86400)}</span></div>`).join("");
   const bp=basePlan(),end=bp[bp.length-1],endDay=end*Math.log(1+st.ret/100)/365.25;
   $("futK").textContent=st.goalYear+" онд таны мөнгө";$("futV").textContent="өдөрт ~"+fmt(Math.round(endDay/1000)*1000)+" өснө";
   $("futS").textContent=cRate>0?"Одоогийнхоос "+Math.round(endDay/(cRate*86400))+" дахин хурдан":"Мөнгө хийж эхлэхэд тоолуур ажиллана";
-  $("cNote").textContent=st.ret+"% жилийн өгөөжөөр тооцсон таамаг. Бодит үнэ цэнийг шинэчлэхэд тоолуур тэндээс дахин эхэлнэ.";
+  $("cNote").textContent="Бонд, хадгаламж, P2P нь өөрийн хүүгээр (татвар хассан), сан, хувьцаа, багц нь "+st.ret+"% таамгаар тооцогдоно. Бодит үнэ цэнийг шинэчлэхэд тоолуур тэндээс дахин эхэлнэ.";
   const p=Math.min(1,v/st.goal),stage=Math.min(10,Math.floor(p*10)+1);$("treeCap").textContent="Мод · "+stage+"-р шат / 10";
   drawTree(stage,p);tickCounter();
 }
@@ -488,7 +548,21 @@ function drawChart(){
 }
 
 // ---------- assets ----------
+function renderCoupons(){
+  const up=upcomingCoupons(),card=$("cpCard");card.hidden=!up.length;if(!up.length)return;
+  const cur=ym(),b=Array(12).fill(0);up.forEach(c=>{const k=mb(cur,ym(c.d));if(k>=0&&k<12)b[k]+=c.net});
+  const tot=b.reduce((x,y)=>x+y,0),mx=Math.max(...b,1),nk=mb(cur,ym(up[0].d)),W=340,H=150,bw=20,gap=(W-12*bw)/12;
+  $("cpSub").textContent="ирэх 12 сар · "+fmt(tot)+" цэвэр";
+  let g="";b.forEach((x,k)=>{const X=gap/2+k*(bw+gap),h=x?Math.max(4,x/mx*96):0,Y=118-h,m=+addM(cur,k).slice(5);
+    g+=`<rect x="${X}" y="${x?Y:116}" width="${bw}" height="${x?h:2}" rx="4" fill="${k===nk?"var(--gold)":x?"var(--accent)":"var(--track)"}"/>`;
+    if(x)g+=`<text x="${X+bw/2}" y="${Y-5}" text-anchor="middle" font-size="9.5" font-weight="600" fill="${k===nk?"var(--gold-ink)":"var(--ink)"}">${kfmt(x)}</text>`;
+    g+=`<text x="${X+bw/2}" y="136" text-anchor="middle" font-size="10" fill="var(--muted)">${m}</text>`});
+  $("cpChart").innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Ирэх 12 сарын хүүгийн төлбөр, нийт ${fmt(tot)}"><line x1="0" x2="${W}" y1="118" y2="118" stroke="var(--line)"/>${g}</svg>`;
+  $("cpList").innerHTML=up.slice(0,4).map((c,k)=>`<div class="tx num"><span>${k===0?"<b style='color:var(--gold-ink)'>●</b> ":""}${dotD(c.d)} · ${esc(c.h.name)}</span><span style="font-weight:600">+${fmt(c.net)}</span></div>`).join("")+
+    `<p class="note">Дүн нь ${up[0].h.fee?"татвар суутгасны дараах ":""}цэвэр хүү. Шар багана = дараагийн төлбөр.</p>`;
+}
 function renderAssets(){
+  renderCoupons();
   const {v,i}=totals(),has=S.holdings.length>0;
   $("aSub").textContent=has?S.holdings.length+" хөрөнгө · "+fmt(v):"Бүртгэл хоосон";
   const byT={};S.holdings.forEach(h=>byT[h.type]=(byT[h.type]||0)+valueOf(h));
@@ -506,7 +580,7 @@ function renderAssets(){
     const b=document.createElement("button");b.type="button";b.className="item";
     b.innerHTML=`${icon}<span class="stack"><span class="nm"></span><span class="b"></span></span><span class="amt num"><b>${short(val)}</b><small class="${g<0?"neg":""}">${g>=0?"+":""}${short(g)}${inv>0?" ("+(g>=0?"+":"")+Math.round(g/inv*100)+"%)":""}</small></span>`;
     b.querySelector(".nm").textContent=h.name;b.querySelector(".b").textContent=sub;b.onclick=()=>openDetail(h.id);L.appendChild(b)});
-  const tx=[];S.holdings.forEach(h=>(h.deposits||[]).forEach(d=>tx.push({d:d.d,a:d.a,n:h.name,o:d.open})));
+  const tx=[];S.holdings.forEach(h=>allDeps(h).forEach(d=>tx.push({d:d.d,a:d.a,n:h.name,o:d.open})));
   tx.sort((a,b)=>b.d.localeCompare(a.d));
   $("txs").innerHTML=tx.length?tx.slice(0,5).map(t=>`<div class="tx num"><span>${t.d.slice(5).replace("-",".")} · ${esc(t.n)}</span><span style="font-weight:600">${t.o?"Эхний үлдэгдэл":"+"+fmt(t.a)}</span></div>`).join(""):'<p class="note">Гүйлгээ алга</p>';
   const bs=badges();$("medalCount").textContent=bs.filter(b=>b.on).length+" / "+bs.length;
@@ -623,6 +697,8 @@ function openForm(h){
   <label class="f">Нэр<input id="fName" value="${esc(h.name)}" placeholder="Жишээ: Бонд 2027"></label>
   <div class="r2"><label class="f">Төрөл<select id="fType">${typeOpts(h.type)}</select></label>
   <label class="f">Жилийн хүү (%)<input id="fRate" type="number" inputmode="decimal" step="0.1" value="${h.rate??""}"></label></div>
+  <div class="r2" id="fFeeW"><label class="f">Хүүгийн татвар (%)<input id="fFee" type="number" inputmode="decimal" step="0.1" min="0" max="100" value="${h.fee??(h.type==="bond"?5:0)}"></label>
+  <label class="f">Хүү олгох<select id="fFreq">${[1,3,6,12,0].map(v=>`<option value="${v}"${v===(h.freq??3)?" selected":""}>${FREQ[v]}</option>`).join("")}</select></label></div>
   ${ed?"":`<label class="f">Хийсэн дүн (₮)<input id="fAmt" type="number" inputmode="numeric" placeholder="1000000"></label>`}
   <div class="r2"><label class="f">Эхэлсэн огноо<input id="fStart" type="date" value="${h.start||todayStr()}"></label>
   <label class="f">Дуусах огноо<input id="fMat" type="date" value="${h.maturity||""}"></label></div>
@@ -630,42 +706,128 @@ function openForm(h){
   <p class="note" id="fHint"></p>
   <div class="acts"><button class="btn ghost" id="fC" type="button">Болих</button><button class="btn green" id="fS" type="button">Хадгалах</button></div>`,
   (el,close)=>{const q=s=>el.querySelector(s);
-    const upd=()=>{const a=auto({type:q("#fType").value});q("#fValW").hidden=a;q("#fHint").textContent=a?"Бонд, хадгаламж, P2P зээлийн үнэ цэнийг хүүгээр нь өдөр бүр автоматаар тооцно.":"Үнэ цэнэ өөрчлөгдөх бүрд шинэчилж байгаарай."};
+    const upd=()=>{const a=auto({type:q("#fType").value});q("#fValW").hidden=a;q("#fFeeW").hidden=q("#fType").value!=="bond";q("#fHint").textContent=a?"Бонд, хадгаламж, P2P зээлийн үнэ цэнийг хүүгээр нь өдөр бүр автоматаар тооцно.":"Үнэ цэнэ өөрчлөгдөх бүрд шинэчилж байгаарай."};
     q("#fType").onchange=upd;upd();q("#fC").onclick=close;
     q("#fS").onclick=()=>{const name=q("#fName").value.trim();if(!name){q("#fName").focus();return}
-      const n={...h,id:h.id||"h-"+uid(),name,type:q("#fType").value,rate:+q("#fRate").value||0,start:q("#fStart").value,maturity:q("#fMat").value,value:+q("#fVal").value||0};
+      const n={...h,id:h.id||"h-"+uid(),name,type:q("#fType").value,rate:+q("#fRate").value||0,fee:q("#fType").value==="bond"?Math.max(0,Math.min(100,+q("#fFee").value||0)):0,freq:q("#fType").value==="bond"?+q("#fFreq").value:null,start:q("#fStart").value,maturity:q("#fMat").value,value:+q("#fVal").value||0};
       if(!ed){const a=+q("#fAmt").value||0;n.deposits=a?[{d:n.start||todayStr(),a}]:[];if(n.value===0&&!auto(n))n.value=a}
       close();saveHolding(n)}});
 }
+function addMonthsDate(ds,n){const d=new Date(ds+"T00:00:00");const day=d.getDate();d.setMonth(d.getMonth()+n);if(d.getDate()<day)d.setDate(0);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+const PROD={
+  bond:{n:"Бонд",obj:"бонд",rate:20,terms:[3,6,12,24,36],term:12},
+  stock:{n:"Хувьцаа",obj:"хувьцаа"},
+  pack:{n:"Багц",obj:"багц"},
+  deposit:{n:"Хадгаламж",obj:"хадгаламж",rate:12,terms:[3,6,12,24],term:12},
+  p2p:{n:"P2P зээл",obj:"P2P зээл",rate:24,terms:[1,3,6,12],term:3},
+  other:{n:"Бусад",obj:"хөрөнгө"},
+  fund:{n:"Хуримтлалын сан",obj:"сан"}
+};
 function openDeposit(pre){
-  if(!S.holdings.length){openForm();return}
   const tg=targetFor(ym()),left=Math.max(0,tg-monthDeposits(ym()));
-  const def=pre||(S.holdings.find(h=>h.type!=="fund")||S.holdings[0]).id;
-  sheet(`<h3>Мөнгө хийх</h3>
-  <label class="f">Хаана<select id="dH">${S.holdings.map(h=>`<option value="${h.id}"${h.id===def?" selected":""}>${esc(h.name)}</option>`).join("")}</select></label>
+  const preH=pre&&S.holdings.find(h=>h.id===pre);
+  const types=["bond","stock","pack","deposit","p2p","other"];if(preH&&!types.includes(preH.type))types.push(preH.type);
+  sheet(`<h3>Хөрөнгө оруулалт бүртгэх</h3>
+  <span class="note">Бүтээгдэхүүнээ сонгоно уу</span>
+  <div class="opts" style="grid-template-columns:repeat(3,minmax(0,1fr))" id="tChips">${types.map(t=>`<button class="opt" type="button" data-t="${t}">${PROD[t].n}</button>`).join("")}</div>
+  <div class="opts" style="grid-template-columns:repeat(2,minmax(0,1fr))"><button class="opt" type="button" id="mNew"></button><button class="opt" type="button" id="mTop"></button></div>
+  <div id="pNew" style="display:flex;flex-direction:column;gap:12px">
+    <label class="f"><span id="nLbl">Нэр</span><input id="bN"></label>
+    <div class="r2" id="rateRow"><label class="f">Жилийн хүү (%)<input id="bR" type="number" inputmode="decimal" step="0.1"></label>
+    <label class="f">Хугацаа<select id="bT"></select></label></div>
+    <div class="r2" id="bFw"><label class="f">Хүүгийн татвар (%)<input id="bF" type="number" inputmode="decimal" step="0.1" min="0" max="100"></label>
+    <label class="f">Хүү олгох<select id="bP"><option value="1">Сар бүр</option><option value="3" selected>Улирал бүр</option><option value="6">Хагас жил</option><option value="12">Жил бүр</option><option value="0">Хугацааны эцэст</option></select></label></div>
+    <label class="f" id="bMw" hidden>Дуусах огноо<input id="bM" type="date"></label>
+    <label class="f" id="rcW" hidden>Сар бүр нэмэх дүн (₮, заавал биш)<input id="rc" type="number" inputmode="numeric" placeholder="120000"></label>
+  </div>
+  <div id="pTop" hidden><label class="f">Аль нь<select id="dH"></select></label></div>
   <div class="r2"><label class="f">Дүн (₮)<input id="dA" type="number" inputmode="numeric" value="${Math.round(left||tg)}"></label>
   <label class="f">Огноо<input id="dD" type="date" value="${todayStr()}"></label></div>
+  <p class="note" id="dEst"></p>
   <p class="note">Энэ сарын зорилт ${fmt(tg)} · үлдсэн ${fmt(left)}</p>
   <div class="acts"><button class="btn ghost" id="dC" type="button">Болих</button><button class="btn green" id="dS" type="button">Нэмэх</button></div>`,
-  (el,close)=>{const q=s=>el.querySelector(s);q("#dC").onclick=close;
-    q("#dS").onclick=()=>{const h=S.holdings.find(x=>x.id===q("#dH").value),a=+q("#dA").value;if(!h||!(a>0)){q("#dA").focus();return}
-      const n=clone(h);n.deposits=[...(n.deposits||[]),{d:q("#dD").value||todayStr(),a}];if(!auto(n))n.value=(+n.value||invested(h))+a;close();saveHolding(n)}});
+  (el,close)=>{const q=s=>el.querySelector(s);
+    let type=preH?preH.type:"bond",mode=preH?"top":"new";
+    const P=()=>PROD[type],isRate=()=>!!P().terms,list=()=>S.holdings.filter(h=>h.type===type);
+    const mat=()=>{const t=+q("#bT").value;return t?addMonthsDate(q("#dD").value||todayStr(),t):q("#bM").value};
+    const feeOn=()=>type==="bond";
+    const est=()=>{const e=q("#dEst");if(mode!=="new"||!isRate()){e.textContent="";return}
+      if(feeOn()){const a=+q("#dA").value,r=+q("#bR").value,m=mat(),d=q("#dD").value||todayStr(),fp=Math.max(0,Math.min(100,+q("#bF").value||0)),f=+q("#bP").value;
+        if(!(a>0&&r>0&&m)){e.textContent="";return}
+        const sch=couponSchedule({type:"bond",rate:r,fee:fp,start:d,maturity:m,freq:f,deposits:[{d,a}]}),N=sch.reduce((x,c)=>x+c.net,0),T=sch.reduce((x,c)=>x+c.tax,0);
+        e.innerHTML=`<b>${FREQ[f]}</b> хүү олгоно · ${sch.length} удаа<br>Нэг удаад ~<b class="num">${fmt(sch[0].net)}</b>${fp?` (${fp}% татвар ${fmt(sch[0].tax)} суутгасны дараа)`:""}<br>Эхний хүү: <b>${dotD(sch[0].d)}</b> · Нийт цэвэр хүү <b class="num">${fmt(N)}</b>${fp?` (татвар ${fmt(T)})`:""}<br>${dotD(m)}-нд үндсэн ${fmt(a)} буцаж орно.${schedTable(sch.map(c=>({...c,paid:false})),a)}`;return}const a=+q("#dA").value,r=+q("#bR").value,m=mat(),fp=feeOn()?Math.max(0,Math.min(100,+q("#bF").value||0)):0;
+      if(a>0&&r>0&&m){const yrs=Math.max(0,(new Date(m)-new Date(q("#dD").value||todayStr()))/864e5/365.25);
+        const gross=a*(Math.pow(1+r/100,yrs)-1),net=a*(Math.pow(1+r/100*(1-fp/100),yrs)-1),fee=gross-net;
+        e.innerHTML="Хугацаа дуусахад (<b>"+m.replace(/-/g,".")+"</b>):<br>Хүү <b class=\"num\">"+fmt(gross)+"</b>"+(fp?" − шимтгэл <b class=\"num\">"+fmt(fee)+"</b> = цэвэр хүү <b class=\"num\">"+fmt(net)+"</b>":"")+"<br>Нийт ойролцоогоор <b class=\"num\">"+fmt(a+net)+"</b> болно"+(fp?" (цэвэр өгөөж жилийн "+(r*(1-fp/100)).toFixed(1)+"%)":"")+"."}else e.textContent=""};
+    const draw=()=>{const p=P(),hs=list();if(mode==="top"&&!hs.length)mode="new";
+      el.querySelectorAll("#tChips .opt").forEach(b=>b.setAttribute("aria-pressed",b.dataset.t===type));
+      q("#mNew").textContent="Шинэ "+p.obj+" нэмэх";q("#mTop").textContent="Байгаа "+p.obj+" дээр";
+      q("#mTop").disabled=!hs.length;q("#mNew").setAttribute("aria-pressed",mode==="new");q("#mTop").setAttribute("aria-pressed",mode==="top");
+      q("#pNew").hidden=mode!=="new";q("#pTop").hidden=mode!=="top";
+      q("#nLbl").textContent="Нэр";q("#bN").placeholder=type==="stock"?"Жишээ: APU, Говь":type==="pack"?"Жишээ: Мандал багц сан":"Хоосон бол автоматаар нэрлэнэ";
+      q("#rateRow").hidden=!isRate();q("#rcW").hidden=type!=="deposit";q("#bFw").hidden=!(isRate()&&feeOn());if(feeOn()){const lb=S.holdings.filter(h=>h.type==="bond").slice(-1)[0];q("#bF").value=lb&&lb.fee!=null?lb.fee:5;q("#bP").value=String(lb&&lb.freq!=null?lb.freq:3)}q("#bMw").hidden=!isRate()||q("#bT").value!=="0";
+      if(isRate()){const last=S.holdings.filter(h=>h.type===type).slice(-1)[0];q("#bR").value=last&&last.rate?last.rate:p.rate;
+        q("#bT").innerHTML=p.terms.map(m=>`<option value="${m}"${m===p.term?" selected":""}>${m} сар</option>`).join("")+'<option value="0">Өөр огноо</option>';q("#bMw").hidden=true}
+      q("#dH").innerHTML=hs.map(h=>`<option value="${h.id}"${preH&&h.id===preH.id?" selected":""}>${esc(h.name)}</option>`).join("");
+      q("#dS").textContent="Хадгалах";est()};
+    el.querySelectorAll("#tChips .opt").forEach(b=>b.onclick=()=>{type=b.dataset.t;mode="new";draw()});
+    q("#mNew").onclick=()=>{mode="new";draw()};q("#mTop").onclick=()=>{if(list().length){mode="top";draw()}};
+    q("#bT").onchange=()=>{q("#bMw").hidden=q("#bT").value!=="0";est()};
+    q("#bP").onchange=()=>est();
+    ["#dA","#bR","#bF","#dD","#bM"].forEach(s=>q(s).addEventListener("input",est));
+    draw();q("#dC").onclick=close;
+    q("#dS").onclick=()=>{const a=+q("#dA").value,d=q("#dD").value||todayStr();if(!(a>0)){q("#dA").focus();return}
+      if(mode==="new"){const p=P();let name=q("#bN").value.trim();
+        if(isRate()){const r=+q("#bR").value||0,m=mat();if(!m){q("#bM").focus();return}
+          name=name||(p.n+" "+r+"% · "+m.slice(0,7).replace("-","."));
+          const fee=feeOn()?Math.max(0,Math.min(100,+q("#bF").value||0)):0;
+          const rcA=type==="deposit"?+q("#rc").value||0:0,extra=feeOn()?{freq:+q("#bP").value}:rcA>0?{recur:{a:rcA,from:addMonthsDate(d,1)}}:{};
+          close();saveHolding({id:"h-"+uid(),name,type,rate:r,fee,...extra,start:d,maturity:m,value:0,deposits:[{d,a}]},p.n+" нэмэгдлээ");return}
+        if(!name){q("#bN").focus();return}
+        close();saveHolding({id:"h-"+uid(),name,type,rate:0,start:d,maturity:"",value:a,deposits:[{d,a}]},p.n+" нэмэгдлээ");return}
+      const h=S.holdings.find(x=>x.id===q("#dH").value);if(!h)return;
+      const n=clone(h);n.deposits=[...(n.deposits||[]),{d,a}];if(!auto(n))n.value=(+n.value||invested(h))+a;close();saveHolding(n)}});
+}
+function couponDetail(h){
+  const sch=couponSchedule(h),fp=+h.fee||0,got=sch.filter(c=>c.paid),left=sch.filter(c=>!c.paid),nx=left[0];
+  const bw=18,gp=12,W=Math.max(320,sch.length*(bw+gp)+gp),H=150,mx=Math.max(...sch.map(c=>c.net),1);
+  let g="";sch.forEach((c,k)=>{const X=gp+k*(bw+gp),hh=Math.max(4,c.net/mx*90),Y=112-hh,isN=nx&&c===nx;
+    g+=`<rect x="${X}" y="${Y}" width="${bw}" height="${hh}" rx="4" fill="${c.paid?"var(--accent)":isN?"var(--gold)":"var(--accent-soft)"}" ${!c.paid&&!isN?'stroke="var(--accent)" stroke-width="1"':""}/>`;
+    if(isN)g+=`<text x="${X+bw/2}" y="${Y-5}" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--gold-ink)">${kfmt(c.net)}</text>`;
+    g+=`<text x="${X+bw/2}" y="128" text-anchor="middle" font-size="8.5" fill="var(--muted)">${c.d.slice(5,7)}/${c.d.slice(8)}</text>`;
+    if(k===0||c.d.slice(0,4)!==sch[k-1].d.slice(0,4))g+=`<text x="${X}" y="142" font-size="8.5" fill="var(--muted)">${c.d.slice(0,4)}</text>`});
+  return `<p class="note">Хүү ${h.rate}%${fp?` · татвар ${fp}% → цэвэр <b>${(h.rate*(1-fp/100)).toFixed(1)}%</b>`:""} · ${FREQ[freqOf(h)]}</p>
+  <div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Хүү авах өдрүүд: ${sch.length} удаа"><line x1="0" x2="${W}" y1="112" y2="112" stroke="var(--line)"/>${g}</svg></div>
+  <div class="legend"><span><i style="background:var(--accent);height:10px;width:10px;border-radius:3px"></i>Авсан</span><span><i style="background:var(--gold);height:10px;width:10px;border-radius:3px"></i>Дараагийнх</span><span><i style="background:var(--accent-soft);border:1px solid var(--accent);height:10px;width:10px;border-radius:3px"></i>Удахгүй</span></div>
+  <div class="g2"><div class="tile" style="background:var(--bg)"><span class="k">Авсан хүү (${got.length})</span><span class="v num">${fmt(got.reduce((x,c)=>x+c.net,0))}</span></div><div class="tile" style="background:var(--bg)"><span class="k">Авах хүү (${left.length})</span><span class="v num">${fmt(left.reduce((x,c)=>x+c.net,0))}</span></div></div>
+  <h2 style="margin:4px 0 0;font-size:14px">Төлбөрийн хуваарь</h2>${schedTable(sch,invested(h))}
+  ${nx?`<p class="note">Дараагийн хүү: <b>${dotD(nx.d)}</b> · ~<b class="num">${fmt(nx.net)}</b>${fp?` (татвар ${fmt(nx.tax)} суутгасны дараа)`:""}. ${dotD(h.maturity)}-нд үндсэн ${fmt(invested(h))} буцаж орно.</p>`:`<p class="note">Бүх хүү олгогдсон.</p>`}`;
 }
 function openDetail(id){
   const h=S.holdings.find(x=>x.id===id);if(!h)return;const a=auto(h);
-  const rows=(h.deposits||[]).slice().sort((x,y)=>y.d.localeCompare(x.d)).map(d=>`<div class="tx num"><span>${d.d.replace(/-/g,".")}</span><span>${d.open?"Эхний үлдэгдэл · ":""}${fmt(d.a)}</span></div>`).join("")||'<p class="note">Бүртгэл алга</p>';
-  let mat="";if(a&&h.maturity&&h.rate){const yrs=(new Date(h.maturity)-Date.now())/YS/1000;if(yrs>0)mat=`<p class="note">Хугацаа дуусахад ойролцоогоор <b class="num">${fmt(valueOf(h)*Math.pow(1+h.rate/100,yrs))}</b> болно (хүүгийн орлогын 10% татварын өмнө).</p>`}
+  const rows=allDeps(h).slice().sort((x,y)=>y.d.localeCompare(x.d)).map(d=>`<div class="tx num"><span>${d.d.replace(/-/g,".")}</span><span>${d.open?"Эхний үлдэгдэл · ":d.auto?"авто · ":""}${fmt(d.a)}</span></div>`).join("")||'<p class="note">Бүртгэл алга</p>';
+  let mat="";if(a&&h.maturity&&h.rate){const yrs=(new Date(h.maturity)-Date.now())/YS/1000;if(yrs>0){const fin=valueOf(h)*Math.pow(1+effRate(h),yrs),inv=invested(h),fp=+h.fee||0,gross=valueOf({...h,fee:0})*Math.pow(1+(+h.rate||0)/100,yrs)-inv;
+    mat=`<p class="note">Хүү ${h.rate}%${fp?` · шимтгэл ${fp}% → цэвэр <b>${(h.rate*(1-fp/100)).toFixed(1)}%</b>`:""}<br>Хугацаа дуусахад ойролцоогоор <b class="num">${fmt(fin)}</b> болно${fp?` (хүү ${fmt(gross)} − шимтгэл ${fmt(gross-(fin-inv))})`:""}.</p>`}}
+  if(isCoupon(h))mat=couponDetail(h);
   sheet(`<h3>${esc(h.name)}</h3>
   <div class="g2"><div class="tile" style="background:var(--bg)"><span class="k">Үнэ цэнэ</span><span class="v num">${short(valueOf(h))}</span></div><div class="tile" style="background:var(--bg)"><span class="k">Хийсэн</span><span class="v num">${short(invested(h))}</span></div></div>
   ${mat}
   ${a?"":`<label class="f">Одоогийн үнэ цэнийг шинэчлэх (₮)<input id="uV" type="number" inputmode="numeric" value="${Math.round(valueOf(h))}"></label><button class="btn ghost" id="uS" type="button">Үнэ цэнэ хадгалах</button>`}
+  ${a?`<h2 style="margin:4px 0 0;font-size:14px">Сар бүрийн шилжүүлэг</h2>
+  <div class="r2"><label class="f">Сар бүр (₮)<input id="rA" type="number" inputmode="numeric" value="${h.recur&&h.recur.a||""}" placeholder="120000"></label>
+  <label class="f">Эхлэх огноо<input id="rF" type="date" value="${(h.recur&&nextRecur(h))||addMonthsDate(todayStr(),1)}"></label></div>
+  <p class="note">${h.recur?`Идэвхтэй: сар бүрийн ${+h.recur.from.slice(8)}-нд <b class="num">${fmt(h.recur.a)}</b> автоматаар нэмэгдэнэ${nextRecur(h)?` · дараагийнх ${dotD(nextRecur(h))}`:""}.`:"Сар бүр тогтмол хийдэг бол дүн, эхлэх огноогоо оруулна уу. Өнгөрсөн огноо оруулбал өмнөх сарууд ч нэмэгдэнэ."}</p>
+  <div class="acts"><button class="btn ghost" id="rcSave" type="button">${h.recur?"Дүн өөрчлөх":"Тохируулах"}</button>${h.recur?'<button class="btn danger" id="rX" type="button">Зогсоох</button>':""}</div>`:""}
   <h2 style="margin:0;font-size:14px">Түүх</h2><div style="max-height:180px;overflow:auto">${rows}</div>
-  <div class="acts"><button class="btn green" id="xD" type="button">+ Мөнгө хийх</button><button class="btn ghost" id="xE" type="button">Засах</button></div>
+  <div class="acts"><button class="btn green" id="xD" type="button">+ Нэмж оруулах</button><button class="btn ghost" id="xE" type="button">Засах</button></div>
   <button class="btn danger" id="xX" type="button">Устгах</button>`,
   (el,close)=>{const q=s=>el.querySelector(s);
     q("#xD").onclick=()=>{close();openDeposit(id)};q("#xE").onclick=()=>{close();openForm(clone(h))};
     const x=q("#xX");x.onclick=()=>{if(x.dataset.c){close();deleteHolding(id)}else{x.dataset.c="1";x.textContent="Дахин дарж устгахыг баталгаажуулна уу"}};
-    const u=q("#uS");if(u)u.onclick=()=>{const v=+q("#uV").value;if(v>0){close();saveHolding({...clone(h),value:v},"Үнэ цэнэ шинэчлэгдлээ")}}});
+    const rs=q("#rcSave");if(rs)rs.onclick=()=>{const amt=+q("#rA").value,f=q("#rF").value;if(!(amt>0)){q("#rA").focus();return}if(!f){q("#rF").focus();return}
+      const n=materialize(h);n.recur={a:amt,from:f};close();saveHolding(n,"Сар бүр "+fmt(amt)+" автоматаар нэмэгдэнэ")};
+    const rx=q("#rX");if(rx)rx.onclick=()=>{if(rx.dataset.c){close();saveHolding(materialize(h),"Сар бүрийн шилжүүлгийг зогсоолоо")}else{rx.dataset.c="1";rx.textContent="Дахин дарж баталгаажуулна уу"}};
+    const u=q("#uS");if(u)u.onclick=()=>{const v=+q("#uV").value;if(v>0){close();saveHolding({...clone(h),value:v,valueAt:todayStr()},"Үнэ цэнэ шинэчлэгдлээ")}}});
 }
 function openSettings(){
   const s=S.settings;
@@ -690,8 +852,10 @@ function celebrate(b){const c=document.createElement("div");c.className="celebra
 
 $("btnSettings").onclick=openSettings;$("btnDeposit").onclick=()=>openDeposit();$("btnAdd").onclick=()=>openForm();
 $("heroBtn").onclick=()=>{location.hash="counter"};$("nextBadge").onclick=()=>{location.hash="plan"};
+$("nextCoupon").onclick=()=>{location.hash="assets"};
 $("bondAlert").onclick=()=>openDetail($("bondAlert").dataset.id);
-$("seedFund").onclick=()=>saveHolding({id:"h-"+uid(),name:"Хуримтлалын сан",type:"fund",rate:15,start:"2023-09-01",maturity:"",value:11654002,deposits:[{d:"2026-10-27",a:9327000,open:true}]},"Хуримтлалын сан нэмэгдлээ");
+$("fundCard").onclick=()=>openDetail($("fundCard").dataset.id);
+$("seedFund").onclick=()=>saveHolding({id:"h-"+uid(),name:"Хуримтлалын сан",type:"fund",rate:15,start:"2023-09-01",maturity:"",value:11654002,valueAt:"2026-10-27",deposits:[{d:"2026-10-27",a:9327000,open:true}]},"Хуримтлалын сан нэмэгдлээ");
 init();
 })();
 </script>
