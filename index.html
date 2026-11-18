@@ -371,7 +371,9 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 
 // ---------- model ----------
 const auto=h=>h.type==="bond"||h.type==="deposit"||h.type==="p2p";
-function allDeps(h){const b=h.deposits||[],R=h.recur;if(!R||!(+R.a>0)||!R.from)return b;
+function fundEst(h){const st=S.settings,out=[];if(h.type!=="fund"||!h.valueAt||!(+st.fundMonthly>0))return out;const t=todayStr();
+  for(let k=1;k<600;k++){const d=addMonthsDate(h.valueAt,k);if(d>t)break;out.push({d,a:+st.fundMonthly,auto:true,est:true})}return out}
+function allDeps(h){if(h.type==="fund")return (h.deposits||[]).concat(fundEst(h));const b=h.deposits||[],R=h.recur;if(!R||!(+R.a>0)||!R.from)return b;
   const t=todayStr(),end=h.maturity&&h.maturity<t?h.maturity:t,g=[];
   for(let k=0;k<600;k++){const d=addMonthsDate(R.from,k);if(d>end)break;g.push({d,a:+R.a,auto:true})}return b.concat(g)}
 function materialize(h){const n=clone(h);n.deposits=allDeps(h).map(x=>x.open?{d:x.d,a:x.a,open:true}:{d:x.d,a:x.a});n.recur=null;return n}
@@ -402,6 +404,8 @@ function valueOf(h){
     const gr=(a,d)=>a*Math.pow(1+r,Math.max(0,(endT-new Date(d).getTime())/YS/1000));
     if(A&&A.d)return gr(+A.v,A.d)+allDeps(h).filter(d=>d.d>A.d).reduce((s,d)=>s+gr(d.a,d.d),0);
     return allDeps(h).reduce((s,d)=>s+gr(d.a,d.d),0)}
+  if(h.type==="fund"&&h.valueAt&&+h.value>0){const rr=S.settings.ret/100,now=Date.now(),gr=(a,d)=>a*Math.pow(1+rr,Math.max(0,(now-new Date(d).getTime())/YS/1000));
+    return gr(+h.value,h.valueAt)+fundEst(h).reduce((x,c)=>x+gr(c.a,c.d),0)}
   return +h.value||invested(h);
 }
 function totals(){let v=0,i=0;S.holdings.forEach(h=>{v+=valueOf(h);i+=invested(h)});return{v,i}}
@@ -475,7 +479,7 @@ function render(){
   if(fh){const fv=valueOf(fh),fi=invested(fh),fg=fv-fi;fc.dataset.id=fh.id;$("fcV").textContent=short(fv);
     $("fcG").textContent=(fg>=0?"+":"")+short(fg)+(fi>0?" ("+(fg>=0?"+":"")+Math.round(fg/fi*100)+"%)":"");
     const ua=fh.valueAt||((fh.deposits||[]).slice(-1)[0]||{}).d,dd=ua?Math.floor(dDiff(ua,todayStr())):null;
-    $("fcU").textContent=ua?("Шинэчилсэн "+dotD(ua)+(dd>35?" · шинэчлэх цаг болсон":"")):"Дарж үнэ цэнээ шинэчилнэ"}
+    const ne=fundEst(fh).length;$("fcU").textContent=ne?("Таамаг · хуулга "+dotD(fh.valueAt)+" +"+ne+" сарын шимтгэл"):ua?("Шинэчилсэн "+dotD(ua)+(dd>35?" · шинэчлэх цаг болсон":"")):"Дарж үнэ цэнээ шинэчилнэ"}
   const tg=targetFor(cur),dn=monthDeposits(cur);
   $("mTarget").textContent=fmt(tg);const md=$("mDone");md.textContent=dn>=tg?"Биеллээ · "+Math.round(dn/tg*100)+"%":"Хийсэн: "+fmt(dn);md.className="s"+(dn>=tg?" ok":"");
   $("mBar").style.width=Math.min(100,dn/tg*100)+"%";
@@ -889,7 +893,7 @@ function openDetail(id){
       const n=materialize(h);n.recur={a:amt,from:f};close();saveHolding(n,"Сар бүр "+fmt(amt)+" автоматаар нэмэгдэнэ")};
     const rx=q("#rX");if(rx)rx.onclick=()=>{if(rx.dataset.c){close();saveHolding(materialize(h),"Сар бүрийн шилжүүлгийг зогсоолоо")}else{rx.dataset.c="1";rx.textContent="Дахин дарж баталгаажуулна уу"}};
     const u=q("#uS");if(u&&h.type==="fund")u.onclick=()=>{const v=+q("#uV").value,c=+q("#uC").value;if(!(v>0)){q("#uV").focus();return}if(!(c>0)){q("#uC").focus();return}
-      const n=clone(h),diff=Math.round(c-invested(h));if(diff!==0)n.deposits=[...(n.deposits||[]),{d:todayStr(),a:diff}];n.value=v;n.valueAt=todayStr();close();saveHolding(n,"Сан шинэчлэгдлээ")};
+      const n=clone(h),diff=Math.round(c-(h.deposits||[]).reduce((x,d)=>x+(+d.a||0),0));if(diff!==0)n.deposits=[...(n.deposits||[]),{d:todayStr(),a:diff}];n.value=v;n.valueAt=todayStr();close();saveHolding(n,"Сан шинэчлэгдлээ")};
     else if(u&&a)u.onclick=()=>{const v=+q("#uV").value,c=+q("#uC").value;if(!(v>0)){q("#uV").focus();return}if(!(c>0)){q("#uC").focus();return}
       const t=todayStr(),n=clone(h);n.deposits=allDeps(h).filter(d=>!d.auto||d.d<=t).map(x=>x.open?{d:x.d,a:x.a,open:true}:{d:x.d,a:x.a});
       if(h.recur&&h.recur.from){let k=0,f=h.recur.from;while(f<=t&&k<600){k++;f=addMonthsDate(h.recur.from,k)}n.recur={...h.recur,from:f}}
